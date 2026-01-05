@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+	@apply antialiased;
+}
+
+html,
+body,
+#app {
+	@apply h-full w-full m-0 p-0;
+}
+
+body {
+	@apply bg-sudoku-light text-gray-900;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+	@apply w-2 h-2;
+}
+
+::-webkit-scrollbar-track {
+	@apply bg-gray-100;
+}
+
+::-webkit-scrollbar-thumb {
+	@apply bg-gray-400 rounded-full hover:bg-gray-500;
+}
