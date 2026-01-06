@@ -1,16 +1,20 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-sudoku-light to-gray-50 flex items-center justify-center p-4">
-    <div class="max-w-2xl w-full">
+  <div class="min-h-screen bg-gradient-to-br from-sudoku-light to-gray-50 py-8 px-4">
+    <div class="max-w-4xl mx-auto">
+      <!-- Header -->
       <header class="text-center mb-8">
-        <h1 class="text-4xl font-bold text-gray-900 mb-2">Sudoku </h1>
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">Sudoku Trial Day</h1>
         <p class="text-gray-600">Vue 3 + TypeScript + TailwindCSS</p>
       </header>
+
+      <!-- Game Component -->
+      <SudokuGame />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-// Initial component setup
+import SudokuGame from './components/SudokuGame.vue';
 </script>
 
 <style scoped>
