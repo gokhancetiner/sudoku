@@ -29,6 +29,12 @@
         :current-difficulty="gameState.difficulty"
         @change-difficulty="changeDifficulty"
       />
+
+      <AvailableDigits
+        :user-grid="gameState.userGrid.map(row => row.map(cell => cell.value))"
+        :solution="gameState.solution"
+        @select-digit="selectDigit"
+      />
     </aside>
   </main>
 </template>
@@ -38,11 +44,13 @@ import { ref, computed } from 'vue';
 import SudokuGrid from './SudokuGrid.vue';
 import GameInfo from './GameInfo.vue';
 import GameDifficulty from './GameDifficulty.vue';
+import AvailableDigits from './AvailableDigits.vue';
 import type { GameState, Difficulty } from '@/types/sudoku';
 
 // State
 const selectedRow = ref<number>(-1);
 const selectedCol = ref<number>(-1);
+const selectedDigit = ref<number>(-1);
 
 const gameState = ref<GameState>({
   puzzle: Array(9)
@@ -85,6 +93,10 @@ const difficultyLabel = computed(() => {
 const selectCell = (rowIndex: number, colIndex: number) => {
   selectedRow.value = rowIndex;
   selectedCol.value = colIndex;
+};
+
+const selectDigit = (digit: number) => {
+  selectedDigit.value = digit;
 };
 
 const changeDifficulty = (difficulty: Difficulty) => {
