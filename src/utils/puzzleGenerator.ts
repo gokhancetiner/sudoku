@@ -80,7 +80,3 @@ export function generatePuzzle(difficulty: Difficulty = 'intermediate'): {
   const completeSudoku = generateCompleteSudoku();
   return removeCells(completeSudoku, cellsToRemove);
 }
-
-export function cloneGrid(grid: number[][]): number[][] {
-  return grid.map((row) => [...row]);
-}

@@ -31,7 +31,9 @@
       />
 
       <AvailableDigits
-        :user-grid="gameState.userGrid.map(row => row.map(cell => cell.value))"
+        :user-grid="
+          gameState.userGrid.map((row) => row.map((cell) => cell.value))
+        "
         :solution="gameState.solution"
         @select-digit="selectDigit"
       />
@@ -40,12 +42,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import SudokuGrid from './SudokuGrid.vue';
 import GameInfo from './GameInfo.vue';
 import GameDifficulty from './GameDifficulty.vue';
 import AvailableDigits from './AvailableDigits.vue';
-import { createEmptyGrid, generatePuzzle } from '@/utils/puzzleGenerator';
+import { generatePuzzle, createEmptyGrid } from '@/utils/puzzleGenerator';
+import {
+  placeNumber,
+  clearCell,
+  isSolutionCorrect,
+} from '@/utils/sudokuValidator';
 import type { GameState, Difficulty } from '@/types/sudoku';
 
 // State
@@ -120,11 +127,53 @@ const changeDifficulty = (difficulty: Difficulty) => {
   initializeGame();
 };
 
-// Initialize game on component mount
+// Keyboard event handler for number input
+const handleKeyPress = (event: KeyboardEvent) => {
+  if (selectedRow.value === -1 || selectedCol.value === -1) return;
+
+  const cell = gameState.value.userGrid[selectedRow.value][selectedCol.value];
+
+  const key = event.key;
+
+  if (key >= '1' && key <= '9' && !cell.isOriginal) {
+    event.preventDefault();
+    const num = parseInt(key);
+    placeNumber(
+      gameState.value.userGrid,
+      selectedRow.value,
+      selectedCol.value,
+      num,
+    );
+  } else if ((key === 'Backspace' || key === 'Delete') && !cell.isOriginal) {
+    event.preventDefault();
+    clearCell(gameState.value.userGrid, selectedRow.value, selectedCol.value);
+  } else if (key === 'ArrowUp') {
+    event.preventDefault();
+    selectedRow.value = Math.max(0, selectedRow.value - 1);
+  } else if (key === 'ArrowDown') {
+    event.preventDefault();
+    selectedRow.value = Math.min(8, selectedRow.value + 1);
+  } else if (key === 'ArrowLeft') {
+    event.preventDefault();
+    selectedCol.value = Math.max(0, selectedCol.value - 1);
+  } else if (key === 'ArrowRight') {
+    event.preventDefault();
+    selectedCol.value = Math.min(8, selectedCol.value + 1);
+  }
+
+  if (isSolutionCorrect(gameState.value.userGrid, gameState.value.solution)) {
+    gameState.value.isGameOver = true;
+  }
+};
+
 onMounted(() => {
   initializeGame();
+  window.addEventListener('keydown', handleKeyPress);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyPress);
 });
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>
