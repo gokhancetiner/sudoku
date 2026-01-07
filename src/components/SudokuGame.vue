@@ -59,6 +59,7 @@ import type { GameState, Difficulty } from '@/types/sudoku';
 const selectedRow = ref<number>(-1);
 const selectedCol = ref<number>(-1);
 const selectedDigit = ref<number>(-1);
+let timerInterval: ReturnType<typeof setInterval> | null = null;
 
 const gameState = ref<GameState>({
   puzzle: createEmptyGrid(),
@@ -108,6 +109,19 @@ const initializeGame = () => {
     })),
   );
   gameState.value.isGameOver = false;
+  gameState.value.timeElapsed = 0;
+  gameState.value.score = 0;
+  gameState.value.hintsUsed = 0;
+
+  // Clear existing timer if any
+  if (timerInterval !== null) {
+    clearInterval(timerInterval);
+  }
+
+  // Start timer
+  timerInterval = setInterval(() => {
+    gameState.value.timeElapsed += 1;
+  }, 1000);
 };
 
 const selectCell = (rowIndex: number, colIndex: number) => {
@@ -173,6 +187,9 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyPress);
+  if (timerInterval !== null) {
+    clearInterval(timerInterval);
+  }
 });
 </script>
 
