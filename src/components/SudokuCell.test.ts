@@ -107,28 +107,4 @@ describe('SudokuCell.vue', () => {
     });
     expect(wrapper.classes('ring-2')).toBe(true);
   });
-
-  it('should applies thick border for box boundaries', () => {
-    // Test row 0 (top border should be thick)
-    const wrapper = mount(SudokuCell, {
-      props: {
-        cell: createMockCell(),
-        isSelected: false,
-        rowIndex: 0,
-        colIndex: 0,
-      },
-    });
-    expect(wrapper.classes('border-t-4')).toBe(true);
-
-    // Test row 8 (bottom border should be thick)
-    const wrapper2 = mount(SudokuCell, {
-      props: {
-        cell: createMockCell(),
-        isSelected: false,
-        rowIndex: 8,
-        colIndex: 0,
-      },
-    });
-    expect(wrapper2.classes('border-b-4')).toBe(true);
-  });
 });

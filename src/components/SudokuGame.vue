@@ -40,11 +40,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import SudokuGrid from './SudokuGrid.vue';
 import GameInfo from './GameInfo.vue';
 import GameDifficulty from './GameDifficulty.vue';
 import AvailableDigits from './AvailableDigits.vue';
+import { createEmptyGrid, generatePuzzle } from '@/utils/puzzleGenerator';
 import type { GameState, Difficulty } from '@/types/sudoku';
 
 // State
@@ -53,12 +54,8 @@ const selectedCol = ref<number>(-1);
 const selectedDigit = ref<number>(-1);
 
 const gameState = ref<GameState>({
-  puzzle: Array(9)
-    .fill(null)
-    .map(() => Array(9).fill(0)),
-  solution: Array(9)
-    .fill(null)
-    .map(() => Array(9).fill(0)),
+  puzzle: createEmptyGrid(),
+  solution: createEmptyGrid(),
   userGrid: Array(9)
     .fill(null)
     .map(() =>
@@ -90,6 +87,22 @@ const difficultyLabel = computed(() => {
 });
 
 // Methods
+const initializeGame = () => {
+  const { puzzle, solution } = generatePuzzle(gameState.value.difficulty);
+
+  gameState.value.puzzle = puzzle;
+  gameState.value.solution = solution;
+  gameState.value.userGrid = puzzle.map((row) =>
+    row.map((cell) => ({
+      value: cell,
+      isOriginal: cell !== 0,
+      isSelected: false,
+      hasError: false,
+    })),
+  );
+  gameState.value.isGameOver = false;
+};
+
 const selectCell = (rowIndex: number, colIndex: number) => {
   selectedRow.value = rowIndex;
   selectedCol.value = colIndex;
@@ -104,7 +117,13 @@ const changeDifficulty = (difficulty: Difficulty) => {
   gameState.value.score = 0;
   gameState.value.hintsUsed = 0;
   gameState.value.timeElapsed = 0;
+  initializeGame();
 };
+
+// Initialize game on component mount
+onMounted(() => {
+  initializeGame();
+});
 </script>
 
 <style scoped>

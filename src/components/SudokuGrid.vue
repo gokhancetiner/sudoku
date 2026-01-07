@@ -34,19 +34,14 @@ interface Emits {
   (e: 'select-cell', rowIndex: number, colIndex: number): void;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
 const flattenedGrid = computed(() => {
   const grid: SudokuCellType[] = [];
   for (let i = 0; i < 9; i++) {
     for (let j = 0; j < 9; j++) {
-      grid.push({
-        value: 0,
-        isOriginal: false,
-        isSelected: false,
-        hasError: false,
-      });
+      grid.push(props.gameState.userGrid[i][j]);
     }
   }
   return grid;

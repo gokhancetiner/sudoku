@@ -45,22 +45,6 @@ const selectCell = () => {
 const cellClasses = computed(() => {
   const classes: string[] = [];
 
-  // Border styling based on 3x3 box positions
-  const topBorder = props.rowIndex % 3 === 0 ? 'border-t-4' : 'border-t';
-  const bottomBorder =
-    props.rowIndex === 8 ? 'border-b-4' : 'border-b';
-  const leftBorder = props.colIndex % 3 === 0 ? 'border-l-4' : 'border-l';
-  const rightBorder =
-    props.colIndex === 8 ? 'border-r-4' : 'border-r';
-
-  classes.push(topBorder, bottomBorder, leftBorder, rightBorder);
-
-  // Border color
-  const borderColor = props.cell.isOriginal
-    ? 'border-gray-800'
-    : 'border-sudoku-border';
-  classes.push(borderColor);
-
   // Background color
   if (props.cell.hasError) {
     classes.push('bg-red-100');
