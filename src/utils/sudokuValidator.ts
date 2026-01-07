@@ -59,7 +59,6 @@ export function placeNumber(
   value: number,
 ): boolean {
   const conflictingCells = getConflictingCells(userGrid, row, col, value);
-  debugger;
   if (conflictingCells.length > 0) {
     userGrid[row][col].value = value;
     userGrid[row][col].hasError = true;

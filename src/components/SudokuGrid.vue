@@ -1,14 +1,16 @@
 <template>
   <div class="flex flex-col gap-4">
     <div class="bg-white rounded-lg shadow-lg p-6">
-      <div class="grid gap-0" style="grid-template-columns: repeat(9, minmax(0, 1fr))">
+      <div
+        class="grid gap-0"
+        style="grid-template-columns: repeat(9, minmax(0, 1fr))"
+      >
         <SudokuCell
           v-for="(cell, index) in flattenedGrid"
           :key="`${Math.floor(index / 9)}-${index % 9}`"
           :cell="cell"
           :is-selected="
-            selectedRow === Math.floor(index / 9) &&
-            selectedCol === index % 9
+            selectedRow === Math.floor(index / 9) && selectedCol === index % 9
           "
           :row-index="Math.floor(index / 9)"
           :col-index="index % 9"

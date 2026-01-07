@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import SudokuGame from './SudokuGame.vue';
+import type { GameState, SudokuCell } from '../types/sudoku';
+
+interface SudokuGameInstance {
+  gameState: GameState;
+  selectedRow: number;
+  selectedCol: number;
+}
 
 describe('SudokuGame.vue', () => {
   it('should renders the component', () => {
@@ -55,7 +62,7 @@ describe('SudokuGame.vue', () => {
     const wrapper = mount(SudokuGame);
 
     // Access the component instance to check state
-    const instance = wrapper.vm as any;
+    const instance = wrapper.vm as unknown as SudokuGameInstance;
     instance.gameState.score = 100;
     instance.gameState.hintsUsed = 3;
     instance.gameState.timeElapsed = 60;
@@ -75,7 +82,7 @@ describe('SudokuGame.vue', () => {
 
     await sudokuGrid.vm.$emit('select-cell', 3, 4);
 
-    const instance = wrapper.vm as any;
+    const instance = wrapper.vm as unknown as SudokuGameInstance;
     expect(instance.selectedRow).toBe(3);
     expect(instance.selectedCol).toBe(4);
   });
@@ -100,18 +107,18 @@ describe('SudokuGame.vue', () => {
 
   it('should fill a random empty cell with hint', async () => {
     const wrapper = mount(SudokuGame);
-    const instance = wrapper.vm as any;
+    const instance = wrapper.vm as unknown as SudokuGameInstance;
 
     const initialEmpty = instance.gameState.userGrid
       .flat()
-      .filter((cell: any) => cell.value === 0).length;
+      .filter((cell: SudokuCell) => cell.value === 0).length;
 
     const gameDifficulty = wrapper.findComponent({ name: 'GameDifficulty' });
     await gameDifficulty.vm.$emit('show-hint');
 
     const afterHintEmpty = instance.gameState.userGrid
       .flat()
-      .filter((cell: any) => cell.value === 0).length;
+      .filter((cell: { value: number }) => cell.value === 0).length;
 
     // One cell should be filled
     expect(afterHintEmpty).toBe(initialEmpty - 1);
@@ -119,7 +126,7 @@ describe('SudokuGame.vue', () => {
 
   it('should not exceed maximum hints (10)', async () => {
     const wrapper = mount(SudokuGame);
-    const instance = wrapper.vm as any;
+    const instance = wrapper.vm as unknown as SudokuGameInstance;
 
     const gameDifficulty = wrapper.findComponent({ name: 'GameDifficulty' });
 

@@ -113,7 +113,7 @@ describe('puzzleGenerator', () => {
 
   describe('generatePuzzle', () => {
     it('should generate beginner puzzle with correct difficulty', () => {
-      const { puzzle, solution } = generatePuzzle('beginner');
+      const { puzzle } = generatePuzzle('beginner');
 
       const visibleCells = puzzle.flat().filter((cell) => cell !== 0).length;
       expect(visibleCells).toBeGreaterThanOrEqual(36);
@@ -121,7 +121,7 @@ describe('puzzleGenerator', () => {
     });
 
     it('should generate intermediate puzzle with correct difficulty', () => {
-      const { puzzle, solution } = generatePuzzle('intermediate');
+      const { puzzle } = generatePuzzle('intermediate');
 
       const visibleCells = puzzle.flat().filter((cell) => cell !== 0).length;
       expect(visibleCells).toBeGreaterThanOrEqual(32);
@@ -129,7 +129,7 @@ describe('puzzleGenerator', () => {
     });
 
     it('should generate hard puzzle with correct difficulty', () => {
-      const { puzzle, solution } = generatePuzzle('hard');
+      const { puzzle } = generatePuzzle('hard');
 
       const visibleCells = puzzle.flat().filter((cell) => cell !== 0).length;
       expect(visibleCells).toBeGreaterThanOrEqual(28);

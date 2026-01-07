@@ -1,5 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-sudoku-light to-gray-50 py-8 px-4">
+  <div
+    class="min-h-screen bg-gradient-to-br from-sudoku-light to-gray-50 py-8 px-4"
+  >
     <div class="max-w-4xl mx-auto">
       <!-- Header -->
       <header class="text-center mb-8">
@@ -17,5 +19,4 @@
 import SudokuGame from './components/SudokuGame.vue';
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

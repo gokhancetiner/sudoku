@@ -16,9 +16,7 @@
       </div>
       <div>
         <p class="text-sm text-gray-600">Hints Used</p>
-        <p class="text-2xl font-bold text-sudoku-hint">
-          {{ hintsUsed }}/10
-        </p>
+        <p class="text-2xl font-bold text-sudoku-hint">{{ hintsUsed }}/10</p>
       </div>
       <div class="w-full bg-gray-200 rounded-full h-2">
         <div
