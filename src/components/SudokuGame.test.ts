@@ -97,4 +97,51 @@ describe('SudokuGame.vue', () => {
     const mainContent = wrapper.find('h2');
     expect(mainContent.text()).toContain('Hard');
   });
+
+  it('should fill a random empty cell with hint', async () => {
+    const wrapper = mount(SudokuGame);
+    const instance = wrapper.vm as any;
+
+    const initialEmpty = instance.gameState.userGrid
+      .flat()
+      .filter((cell: any) => cell.value === 0).length;
+
+    const gameDifficulty = wrapper.findComponent({ name: 'GameDifficulty' });
+    await gameDifficulty.vm.$emit('show-hint');
+
+    const afterHintEmpty = instance.gameState.userGrid
+      .flat()
+      .filter((cell: any) => cell.value === 0).length;
+
+    // One cell should be filled
+    expect(afterHintEmpty).toBe(initialEmpty - 1);
+  });
+
+  it('should not exceed maximum hints (10)', async () => {
+    const wrapper = mount(SudokuGame);
+    const instance = wrapper.vm as any;
+
+    const gameDifficulty = wrapper.findComponent({ name: 'GameDifficulty' });
+
+    // Use 10 hints
+    for (let i = 0; i < 15; i++) {
+      await gameDifficulty.vm.$emit('show-hint');
+    }
+
+    // Should only have 10 hints used (not 15)
+    expect(instance.gameState.hintsUsed).toBe(10);
+  });
+
+  it('should pass hintsUsed to GameDifficulty button', async () => {
+    const wrapper = mount(SudokuGame);
+    const gameDifficulty = wrapper.findComponent({ name: 'GameDifficulty' });
+
+    expect(gameDifficulty.props('hintsUsed')).toBe(0);
+
+    await gameDifficulty.vm.$emit('show-hint');
+    await wrapper.vm.$nextTick();
+
+    const updatedDifficulty = wrapper.findComponent({ name: 'GameDifficulty' });
+    expect(updatedDifficulty.props('hintsUsed')).toBe(1);
+  });
 });

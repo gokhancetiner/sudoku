@@ -27,7 +27,9 @@
 
       <GameDifficulty
         :current-difficulty="gameState.difficulty"
+        :hints-used="gameState.hintsUsed"
         @change-difficulty="changeDifficulty"
+        @show-hint="showHint"
       />
 
       <AvailableDigits
@@ -131,6 +133,41 @@ const selectCell = (rowIndex: number, colIndex: number) => {
 
 const selectDigit = (digit: number) => {
   selectedDigit.value = digit;
+};
+
+const showHint = () => {
+  // Check if max hints reached
+  if (gameState.value.hintsUsed >= 10) {
+    return;
+  }
+
+  // Find all empty cells (value is 0 and not original)
+  const emptyCells: Array<[number, number]> = [];
+  for (let i = 0; i < 9; i++) {
+    for (let j = 0; j < 9; j++) {
+      const cell = gameState.value.userGrid[i][j];
+      if (cell.value === 0 && !cell.isOriginal) {
+        emptyCells.push([i, j]);
+      }
+    }
+  }
+
+  // If no empty cells, return
+  if (emptyCells.length === 0) {
+    return;
+  }
+
+  // Pick random empty cell
+  const randomIndex = Math.floor(Math.random() * emptyCells.length);
+  const [row, col] = emptyCells[randomIndex];
+
+  // Fill with correct answer from solution
+  const correctValue = gameState.value.solution[row][col];
+  gameState.value.userGrid[row][col].value = correctValue;
+  gameState.value.userGrid[row][col].hasError = false;
+
+  // Increment hints used
+  gameState.value.hintsUsed += 1;
 };
 
 const changeDifficulty = (difficulty: Difficulty) => {

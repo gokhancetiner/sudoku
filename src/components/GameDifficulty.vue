@@ -16,6 +16,22 @@
         {{ capitalizeFirstLetter(difficulty) }}
       </button>
     </div>
+
+    <!-- Hint Button -->
+    <div class="mt-6 pt-6 border-t border-gray-200">
+      <button
+        @click="handleShowHint"
+        :disabled="hintsUsed >= 10"
+        class="w-full px-4 py-2 rounded-lg font-medium transition-all duration-200"
+        :class="
+          hintsUsed >= 10
+            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+            : 'bg-sudoku-hint text-white hover:bg-opacity-90'
+        "
+      >
+        💡 Show Hint ({{ hintsUsed }}/10)
+      </button>
+    </div>
   </div>
 </template>
 
@@ -24,10 +40,12 @@ import type { Difficulty } from '@/types/sudoku';
 
 interface Props {
   currentDifficulty: Difficulty;
+  hintsUsed: number;
 }
 
 interface Emits {
   (e: 'change-difficulty', difficulty: Difficulty): void;
+  (e: 'show-hint'): void;
 }
 
 const difficulties: Difficulty[] = [
@@ -42,6 +60,10 @@ const emit = defineEmits<Emits>();
 
 const selectDifficulty = (difficulty: Difficulty) => {
   emit('change-difficulty', difficulty);
+};
+
+const handleShowHint = () => {
+  emit('show-hint');
 };
 
 const capitalizeFirstLetter = (str: string): string => {

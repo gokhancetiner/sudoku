@@ -7,25 +7,28 @@ describe('GameDifficulty.vue', () => {
     const wrapper = mount(GameDifficulty, {
       props: {
         currentDifficulty: 'intermediate',
+        hintsUsed: 0,
       },
     });
     expect(wrapper.exists()).toBe(true);
   });
 
-  it('should renders all four difficulty buttons', () => {
+  it('should renders all four difficulty buttons and the hint button', () => {
     const wrapper = mount(GameDifficulty, {
       props: {
         currentDifficulty: 'intermediate',
+        hintsUsed: 0,
       },
     });
     const buttons = wrapper.findAll('button');
-    expect(buttons.length).toBe(4);
+    expect(buttons.length).toBe(5);
   });
 
   it('should displays difficulty labels correctly', () => {
     const wrapper = mount(GameDifficulty, {
       props: {
         currentDifficulty: 'intermediate',
+        hintsUsed: 0,
       },
     });
     expect(wrapper.text()).toContain('Beginner');
@@ -38,6 +41,7 @@ describe('GameDifficulty.vue', () => {
     const wrapper = mount(GameDifficulty, {
       props: {
         currentDifficulty: 'hard',
+        hintsUsed: 0,
       },
     });
     const buttons = wrapper.findAll('button');
@@ -48,6 +52,7 @@ describe('GameDifficulty.vue', () => {
     const wrapper = mount(GameDifficulty, {
       props: {
         currentDifficulty: 'beginner',
+        hintsUsed: 0,
       },
     });
     const buttons = wrapper.findAll('button');
@@ -60,6 +65,7 @@ describe('GameDifficulty.vue', () => {
     const wrapper = mount(GameDifficulty, {
       props: {
         currentDifficulty: 'beginner',
+        hintsUsed: 0,
       },
     });
     const buttons = wrapper.findAll('button');
@@ -73,6 +79,7 @@ describe('GameDifficulty.vue', () => {
     const wrapper = mount(GameDifficulty, {
       props: {
         currentDifficulty: 'intermediate',
+        hintsUsed: 0,
       },
     });
     const buttons = wrapper.findAll('button');
@@ -93,6 +100,7 @@ describe('GameDifficulty.vue', () => {
     const wrapper = mount(GameDifficulty, {
       props: {
         currentDifficulty: 'beginner',
+        hintsUsed: 0,
       },
     });
     let buttons = wrapper.findAll('button');
@@ -107,6 +115,7 @@ describe('GameDifficulty.vue', () => {
     const wrapper = mount(GameDifficulty, {
       props: {
         currentDifficulty: 'intermediate',
+        hintsUsed: 0,
       },
     });
     expect(wrapper.text()).toContain('Difficulty');
