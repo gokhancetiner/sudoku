@@ -1,19 +1,39 @@
 <template>
-  <div class="bg-white rounded-lg shadow-lg p-6">
-    <h3 class="text-lg font-bold text-gray-900 mb-4">Game Info</h3>
-    <div class="space-y-4">
-      <div>
-        <p class="text-sm text-gray-600">Time</p>
+  <div class="flex flex-col gap-4">
+    <!-- Row 1: Time and Show Hint Button -->
+    <div class="flex items-center justify-between gap-4">
+      <!-- Difficulty Selector (Pill Buttons) -->
+      <div class="flex gap-2 items-center">
+        <span class="text-sm text-gray-600 font-medium">Level:</span>
+        <div class="flex gap-2 flex-wrap">
+          <button
+            v-for="diff in difficulties"
+            :key="diff"
+            @click="handleChangeDifficulty(diff)"
+            class="px-3 py-1 rounded-full text-sm font-medium transition-all duration-200"
+            :class="
+              currentDifficulty === diff
+                ? 'bg-sudoku-highlight text-white shadow-md'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            "
+          >
+            {{ getDifficultyEmoji(diff) }} {{ capitalizeFirstLetter(diff) }}
+          </button>
+        </div>
+      </div>
+      <!-- Time -->
+      <div class="flex gap-2 items-center">
+        <p class="text-sm text-gray-600">⏱️ Time</p>
         <p class="text-2xl font-bold text-gray-900">
           {{ formatTime(timeElapsed) }}
         </p>
       </div>
 
-      <!-- Show Hint Button -->
+      <!-- Hint Button -->
       <button
         @click="handleShowHint"
         :disabled="hintsUsed >= 10"
-        class="w-full px-4 py-2 rounded-lg font-medium transition-all duration-200 mt-4"
+        class="px-6 py-2 rounded-lg font-medium transition-all duration-200 whitespace-nowrap"
         :class="
           hintsUsed >= 10
             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -27,14 +47,25 @@
 </template>
 
 <script setup lang="ts">
+import type { Difficulty } from '@/types/sudoku';
+
 interface Props {
   timeElapsed: number;
   hintsUsed: number;
+  currentDifficulty: Difficulty;
 }
 
 interface Emits {
   (e: 'show-hint'): void;
+  (e: 'change-difficulty', difficulty: Difficulty): void;
 }
+
+const difficulties: Difficulty[] = [
+  'beginner',
+  'intermediate',
+  'hard',
+  'expert',
+];
 
 defineProps<Props>();
 const emit = defineEmits<Emits>();
@@ -52,5 +83,23 @@ const formatTime = (seconds: number): string => {
 
 const handleShowHint = () => {
   emit('show-hint');
+};
+
+const handleChangeDifficulty = (difficulty: Difficulty) => {
+  emit('change-difficulty', difficulty);
+};
+
+const getDifficultyEmoji = (difficulty: Difficulty): string => {
+  const emojis: Record<Difficulty, string> = {
+    beginner: '🟢',
+    intermediate: '🟡',
+    hard: '🟠',
+    expert: '🔴',
+  };
+  return emojis[difficulty];
+};
+
+const capitalizeFirstLetter = (str: string): string => {
+  return str.charAt(0).toUpperCase() + str.slice(1);
 };
 </script>

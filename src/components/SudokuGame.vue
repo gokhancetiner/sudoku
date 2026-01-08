@@ -1,47 +1,50 @@
 <template>
-  <main class="flex flex-col lg:flex-row gap-8">
-    <!-- Game Grid Section -->
-    <div class="flex-1">
-      <div class="bg-white rounded-lg shadow-xl p-6 h-full">
-        <h2 class="text-xl font-bold text-gray-900 mb-4">
-          {{ difficultyLabel }} - Sudoku Grid
-        </h2>
-        <div class="flex justify-center">
-          <SudokuGrid
-            :game-state="gameState"
-            :selected-row="selectedRow"
-            :selected-col="selectedCol"
-            @select-cell="selectCell"
-          />
-        </div>
-
-        <!-- Available Digits Below Grid -->
-        <div class="mt-8 pt-3 border-t border-gray-300">
-          <AvailableDigits
-            :user-grid="
-              gameState.userGrid.map((row) => row.map((cell) => cell.value))
-            "
-            :solution="gameState.solution"
-            @select-digit="selectDigit"
-          />
-        </div>
-      </div>
-    </div>
-
-    <!-- Sidebar -->
-    <aside class="lg:w-64 space-y-6 flex flex-col">
+  <main class="flex flex-col gap-8">
+    <!-- Game Info Card (Horizontal) -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
       <GameInfo
         :time-elapsed="gameState.timeElapsed"
         :hints-used="gameState.hintsUsed"
-        @show-hint="showHint"
-      />
-
-      <GameDifficulty
         :current-difficulty="gameState.difficulty"
+        @show-hint="showHint"
         @change-difficulty="changeDifficulty"
-        @new-game="startNewGame"
       />
-    </aside>
+    </div>
+
+    <!-- Main Game Area -->
+    <div class="flex flex-col lg:flex-row gap-8">
+      <!-- Game Grid Section -->
+      <div class="flex-1">
+        <div class="bg-white rounded-lg shadow-xl p-6 h-full">
+          <h2 class="text-xl font-bold text-gray-900 mb-4">
+            {{ difficultyLabel }} - Sudoku Grid
+          </h2>
+          <div class="flex justify-center">
+            <SudokuGrid
+              :game-state="gameState"
+              :selected-row="selectedRow"
+              :selected-col="selectedCol"
+              @select-cell="selectCell"
+            />
+          </div>
+
+          <!-- Available Digits Below Grid -->
+          <div class="mt-8 pt-3 border-t border-gray-300">
+            <AvailableDigits
+              :user-grid="
+                gameState.userGrid.map((row) => row.map((cell) => cell.value))
+              "
+              :solution="gameState.solution"
+              @select-digit="selectDigit"
+            />
+          </div>
+        </div>
+      </div>
+
+      <aside class="lg:w-64 space-y-6 flex flex-col">
+        <LeaderboardTable :key="leaderboardRefreshKey" />
+      </aside>
+    </div>
 
     <!-- Game Completion Modal -->
     <GameCompletion
@@ -62,9 +65,9 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import SudokuGrid from './SudokuGrid.vue';
 import GameInfo from './GameInfo.vue';
-import GameDifficulty from './GameDifficulty.vue';
 import AvailableDigits from './AvailableDigits.vue';
 import GameCompletion from './GameCompletion.vue';
+import LeaderboardTable from './LeaderboardTable.vue';
 import { generatePuzzle, createEmptyGrid } from '@/utils/puzzleGenerator';
 import {
   placeNumber,
@@ -73,12 +76,14 @@ import {
 } from '@/utils/sudokuValidator';
 import { calculateFinalScore, getScoreBreakdown } from '@/utils/scoringSystem';
 import { saveGameState, loadGameState, clearGameState } from '@/utils/storage';
+import { addLeaderboardEntry } from '@/utils/leaderboard';
 import type { GameState, Difficulty } from '@/types/sudoku';
 
 // State
 const selectedRow = ref<number>(-1);
 const selectedCol = ref<number>(-1);
 const selectedDigit = ref<number>(-1);
+const leaderboardRefreshKey = ref<number>(0);
 let timerInterval: ReturnType<typeof setInterval> | null = null;
 
 const gameState = ref<GameState>({
@@ -162,6 +167,7 @@ const initializeGame = () => {
   timerInterval = setInterval(() => {
     gameState.value.timeElapsed += 1;
   }, 1000);
+  leaderboardRefreshKey.value++;
 };
 
 const selectCell = (rowIndex: number, colIndex: number) => {
@@ -216,14 +222,6 @@ const changeDifficulty = (difficulty: Difficulty) => {
   initializeGame();
 };
 
-const startNewGame = () => {
-  clearGameState();
-  gameState.value.score = 0;
-  gameState.value.hintsUsed = 0;
-  gameState.value.timeElapsed = 0;
-  initializeGame();
-};
-
 const handleNewPuzzle = () => {
   gameState.value.isGameOver = false;
   initializeGame();
@@ -266,7 +264,6 @@ const handleKeyPress = (event: KeyboardEvent) => {
     event.preventDefault();
     selectedCol.value = Math.min(8, selectedCol.value + 1);
   }
-
   if (isSolutionCorrect(gameState.value.userGrid, gameState.value.solution)) {
     gameState.value.isGameOver = true;
     // Calculate final score when game is completed
@@ -276,10 +273,18 @@ const handleKeyPress = (event: KeyboardEvent) => {
       gameState.value.hintsUsed,
       gameState.value.errorsCount,
     );
+    // Save to leaderboard
+    addLeaderboardEntry(
+      gameState.value.score,
+      gameState.value.difficulty,
+      gameState.value.timeElapsed,
+    );
     // Stop timer
     if (timerInterval !== null) {
       clearInterval(timerInterval);
     }
+
+    clearGameState();
   }
 };
 

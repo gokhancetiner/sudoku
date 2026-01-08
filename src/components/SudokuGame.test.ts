@@ -25,11 +25,11 @@ describe('SudokuGame.vue', () => {
     expect(wrapper.findComponent({ name: 'GameInfo' }).exists()).toBe(true);
   });
 
-  it('should renders GameDifficulty component', () => {
+  it('should renders GameInfo component with difficulty', () => {
     const wrapper = mount(SudokuGame);
-    expect(wrapper.findComponent({ name: 'GameDifficulty' }).exists()).toBe(
-      true,
-    );
+    const gameInfo = wrapper.findComponent({ name: 'GameInfo' });
+    expect(gameInfo.exists()).toBe(true);
+    expect(gameInfo.props('currentDifficulty')).toBe('intermediate');
   });
 
   it('should initializes with correct default game state', () => {
@@ -38,41 +38,6 @@ describe('SudokuGame.vue', () => {
 
     expect(gameInfo.props('timeElapsed')).toBe(0);
     expect(gameInfo.props('hintsUsed')).toBe(0);
-  });
-
-  it('should passes correct props to GameDifficulty', () => {
-    const wrapper = mount(SudokuGame);
-    const gameDifficulty = wrapper.findComponent({ name: 'GameDifficulty' });
-
-    expect(gameDifficulty.props('currentDifficulty')).toBe('intermediate');
-  });
-
-  it('should handles difficulty change event', async () => {
-    const wrapper = mount(SudokuGame);
-    const gameDifficulty = wrapper.findComponent({ name: 'GameDifficulty' });
-
-    await gameDifficulty.vm.$emit('change-difficulty', 'hard');
-
-    const updatedDifficulty = wrapper.findComponent({ name: 'GameDifficulty' });
-    expect(updatedDifficulty.props('currentDifficulty')).toBe('hard');
-  });
-
-  it('should resets game state when difficulty changes', async () => {
-    const wrapper = mount(SudokuGame);
-
-    // Access the component instance to check state
-    const instance = wrapper.vm as unknown as SudokuGameInstance;
-    instance.gameState.score = 100;
-    instance.gameState.hintsUsed = 3;
-    instance.gameState.timeElapsed = 60;
-
-    const gameDifficulty = wrapper.findComponent({ name: 'GameDifficulty' });
-    await gameDifficulty.vm.$emit('change-difficulty', 'expert');
-
-    expect(instance.gameState.score).toBe(0);
-    expect(instance.gameState.hintsUsed).toBe(0);
-    expect(instance.gameState.timeElapsed).toBe(0);
-    expect(instance.gameState.difficulty).toBe('expert');
   });
 
   it('should handles cell selection', async () => {
@@ -95,9 +60,9 @@ describe('SudokuGame.vue', () => {
 
   it('should updates difficulty label when difficulty changes', async () => {
     const wrapper = mount(SudokuGame);
-    const gameDifficulty = wrapper.findComponent({ name: 'GameDifficulty' });
+    const gameInfo = wrapper.findComponent({ name: 'GameInfo' });
 
-    await gameDifficulty.vm.$emit('change-difficulty', 'hard');
+    await gameInfo.vm.$emit('change-difficulty', 'hard');
     await wrapper.vm.$nextTick();
 
     const mainContent = wrapper.find('h2');

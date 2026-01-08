@@ -3,23 +3,13 @@ import { mount } from '@vue/test-utils';
 import GameInfo from './GameInfo.vue';
 
 describe('GameInfo.vue', () => {
-  it('should renders the component', () => {
-    const wrapper = mount(GameInfo, {
-      props: {
-        score: 0,
-        timeElapsed: 0,
-        hintsUsed: 0,
-      },
-    });
-    expect(wrapper.exists()).toBe(true);
-  });
-
   it('should formats time correctly (MM:SS)', () => {
     const wrapper = mount(GameInfo, {
       props: {
         score: 0,
-        timeElapsed: 90, // 1 minute 30 seconds
+        timeElapsed: 90,
         hintsUsed: 0,
+        currentDifficulty: 'intermediate',
       },
     });
     expect(wrapper.text()).toContain('1:30');
@@ -29,8 +19,9 @@ describe('GameInfo.vue', () => {
     const wrapper = mount(GameInfo, {
       props: {
         score: 0,
-        timeElapsed: 3661, // 1 hour 1 minute 1 second
+        timeElapsed: 3661,
         hintsUsed: 0,
+        currentDifficulty: 'intermediate',
       },
     });
     expect(wrapper.text()).toContain('1:01:01');
@@ -42,20 +33,10 @@ describe('GameInfo.vue', () => {
         score: 0,
         timeElapsed: 0,
         hintsUsed: 3,
+        currentDifficulty: 'intermediate',
       },
     });
     expect(wrapper.text()).toContain('3/10');
-  });
-
-  it('should shows "Game Info" heading', () => {
-    const wrapper = mount(GameInfo, {
-      props: {
-        score: 0,
-        timeElapsed: 0,
-        hintsUsed: 0,
-      },
-    });
-    expect(wrapper.text()).toContain('Game Info');
   });
 
   it('should updates time when prop changes', async () => {
@@ -64,6 +45,7 @@ describe('GameInfo.vue', () => {
         score: 0,
         timeElapsed: 60,
         hintsUsed: 0,
+        currentDifficulty: 'intermediate',
       },
     });
     expect(wrapper.text()).toContain('1:00');
