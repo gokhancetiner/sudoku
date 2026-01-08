@@ -36,7 +36,6 @@ describe('SudokuGame.vue', () => {
     const wrapper = mount(SudokuGame);
     const gameInfo = wrapper.findComponent({ name: 'GameInfo' });
 
-    expect(gameInfo.props('score')).toBe(0);
     expect(gameInfo.props('timeElapsed')).toBe(0);
     expect(gameInfo.props('hintsUsed')).toBe(0);
   });
@@ -113,8 +112,8 @@ describe('SudokuGame.vue', () => {
       .flat()
       .filter((cell: SudokuCell) => cell.value === 0).length;
 
-    const gameDifficulty = wrapper.findComponent({ name: 'GameDifficulty' });
-    await gameDifficulty.vm.$emit('show-hint');
+    const gameInfo = wrapper.findComponent({ name: 'GameInfo' });
+    await gameInfo.vm.$emit('show-hint');
 
     const afterHintEmpty = instance.gameState.userGrid
       .flat()
@@ -128,27 +127,14 @@ describe('SudokuGame.vue', () => {
     const wrapper = mount(SudokuGame);
     const instance = wrapper.vm as unknown as SudokuGameInstance;
 
-    const gameDifficulty = wrapper.findComponent({ name: 'GameDifficulty' });
+    const gameInfo = wrapper.findComponent({ name: 'GameInfo' });
 
     // Use 10 hints
     for (let i = 0; i < 15; i++) {
-      await gameDifficulty.vm.$emit('show-hint');
+      await gameInfo.vm.$emit('show-hint');
     }
 
     // Should only have 10 hints used (not 15)
     expect(instance.gameState.hintsUsed).toBe(10);
-  });
-
-  it('should pass hintsUsed to GameDifficulty button', async () => {
-    const wrapper = mount(SudokuGame);
-    const gameDifficulty = wrapper.findComponent({ name: 'GameDifficulty' });
-
-    expect(gameDifficulty.props('hintsUsed')).toBe(0);
-
-    await gameDifficulty.vm.$emit('show-hint');
-    await wrapper.vm.$nextTick();
-
-    const updatedDifficulty = wrapper.findComponent({ name: 'GameDifficulty' });
-    expect(updatedDifficulty.props('hintsUsed')).toBe(1);
   });
 });

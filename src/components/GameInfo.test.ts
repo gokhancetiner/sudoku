@@ -14,17 +14,6 @@ describe('GameInfo.vue', () => {
     expect(wrapper.exists()).toBe(true);
   });
 
-  it('should displays the correct score', () => {
-    const wrapper = mount(GameInfo, {
-      props: {
-        score: 150,
-        timeElapsed: 0,
-        hintsUsed: 0,
-      },
-    });
-    expect(wrapper.text()).toContain('150');
-  });
-
   it('should formats time correctly (MM:SS)', () => {
     const wrapper = mount(GameInfo, {
       props: {
@@ -58,18 +47,6 @@ describe('GameInfo.vue', () => {
     expect(wrapper.text()).toContain('3/10');
   });
 
-  it('should displays hints progress bar at 30%', () => {
-    const wrapper = mount(GameInfo, {
-      props: {
-        score: 0,
-        timeElapsed: 0,
-        hintsUsed: 3,
-      },
-    });
-    const progressBar = wrapper.find('.bg-sudoku-hint');
-    expect(progressBar.attributes('style')).toContain('width');
-  });
-
   it('should shows "Game Info" heading', () => {
     const wrapper = mount(GameInfo, {
       props: {
@@ -79,20 +56,6 @@ describe('GameInfo.vue', () => {
       },
     });
     expect(wrapper.text()).toContain('Game Info');
-  });
-
-  it('should updates score when prop changes', async () => {
-    const wrapper = mount(GameInfo, {
-      props: {
-        score: 0,
-        timeElapsed: 0,
-        hintsUsed: 0,
-      },
-    });
-    expect(wrapper.text()).toContain('0');
-
-    await wrapper.setProps({ score: 500 });
-    expect(wrapper.text()).toContain('500');
   });
 
   it('should updates time when prop changes', async () => {

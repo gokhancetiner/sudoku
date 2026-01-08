@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-4">
-    <div class="bg-white rounded-lg shadow-lg p-6">
+    <div class="bg-white rounded-lg shadow-lg p-3">
       <div
         class="grid gap-0"
         style="grid-template-columns: repeat(9, minmax(0, 1fr))"

@@ -2,7 +2,7 @@
   <main class="flex flex-col lg:flex-row gap-8">
     <!-- Game Grid Section -->
     <div class="flex-1">
-      <div class="bg-white rounded-lg shadow-xl p-6">
+      <div class="bg-white rounded-lg shadow-xl p-6 h-full">
         <h2 class="text-xl font-bold text-gray-900 mb-4">
           {{ difficultyLabel }} - Sudoku Grid
         </h2>
@@ -14,30 +14,31 @@
             @select-cell="selectCell"
           />
         </div>
+
+        <!-- Available Digits Below Grid -->
+        <div class="mt-8 pt-3 border-t border-gray-300">
+          <AvailableDigits
+            :user-grid="
+              gameState.userGrid.map((row) => row.map((cell) => cell.value))
+            "
+            :solution="gameState.solution"
+            @select-digit="selectDigit"
+          />
+        </div>
       </div>
     </div>
 
     <!-- Sidebar -->
-    <aside class="lg:w-64 space-y-6">
+    <aside class="lg:w-64 space-y-6 flex flex-col">
       <GameInfo
-        :score="gameState.score"
         :time-elapsed="gameState.timeElapsed"
         :hints-used="gameState.hintsUsed"
+        @show-hint="showHint"
       />
 
       <GameDifficulty
         :current-difficulty="gameState.difficulty"
-        :hints-used="gameState.hintsUsed"
         @change-difficulty="changeDifficulty"
-        @show-hint="showHint"
-      />
-
-      <AvailableDigits
-        :user-grid="
-          gameState.userGrid.map((row) => row.map((cell) => cell.value))
-        "
-        :solution="gameState.solution"
-        @select-digit="selectDigit"
       />
     </aside>
 

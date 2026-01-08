@@ -13,17 +13,6 @@ describe('GameDifficulty.vue', () => {
     expect(wrapper.exists()).toBe(true);
   });
 
-  it('should renders all four difficulty buttons and the hint button', () => {
-    const wrapper = mount(GameDifficulty, {
-      props: {
-        currentDifficulty: 'intermediate',
-        hintsUsed: 0,
-      },
-    });
-    const buttons = wrapper.findAll('button');
-    expect(buttons.length).toBe(5);
-  });
-
   it('should displays difficulty labels correctly', () => {
     const wrapper = mount(GameDifficulty, {
       props: {

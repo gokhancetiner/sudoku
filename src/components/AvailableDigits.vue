@@ -1,7 +1,7 @@
 <template>
-  <div class="bg-white rounded-lg shadow-lg p-6">
+  <div>
     <h3 class="text-lg font-bold text-gray-900 mb-4">Available Digits</h3>
-    <div class="grid grid-cols-3 gap-2">
+    <div class="flex justify-center gap-2">
       <button
         v-for="digit in digits"
         :key="digit"

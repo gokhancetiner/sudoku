@@ -3,39 +3,41 @@
     <h3 class="text-lg font-bold text-gray-900 mb-4">Game Info</h3>
     <div class="space-y-4">
       <div>
-        <p class="text-sm text-gray-600">Score</p>
-        <p class="text-2xl font-bold text-sudoku-highlight">
-          {{ score }}
-        </p>
-      </div>
-      <div>
         <p class="text-sm text-gray-600">Time</p>
         <p class="text-2xl font-bold text-gray-900">
           {{ formatTime(timeElapsed) }}
         </p>
       </div>
-      <div>
-        <p class="text-sm text-gray-600">Hints Used</p>
-        <p class="text-2xl font-bold text-sudoku-hint">{{ hintsUsed }}/10</p>
-      </div>
-      <div class="w-full bg-gray-200 rounded-full h-2">
-        <div
-          class="bg-sudoku-hint h-2 rounded-full transition-all duration-300"
-          :style="{ width: `${(hintsUsed / 10) * 100}%` }"
-        />
-      </div>
+
+      <!-- Show Hint Button -->
+      <button
+        @click="handleShowHint"
+        :disabled="hintsUsed >= 10"
+        class="w-full px-4 py-2 rounded-lg font-medium transition-all duration-200 mt-4"
+        :class="
+          hintsUsed >= 10
+            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+            : 'bg-sudoku-hint text-white hover:bg-opacity-90'
+        "
+      >
+        💡 Show Hint ({{ hintsUsed }}/10)
+      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 interface Props {
-  score: number;
   timeElapsed: number;
   hintsUsed: number;
 }
 
+interface Emits {
+  (e: 'show-hint'): void;
+}
+
 defineProps<Props>();
+const emit = defineEmits<Emits>();
 
 const formatTime = (seconds: number): string => {
   const hours = Math.floor(seconds / 3600);
@@ -46,5 +48,9 @@ const formatTime = (seconds: number): string => {
     return `${hours}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   }
   return `${minutes}:${String(secs).padStart(2, '0')}`;
+};
+
+const handleShowHint = () => {
+  emit('show-hint');
 };
 </script>
