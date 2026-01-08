@@ -14,6 +14,7 @@
           "
           :row-index="Math.floor(index / 9)"
           :col-index="index % 9"
+          :completions="completions"
           @select="selectCell"
         />
       </div>
@@ -24,6 +25,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import SudokuCell from './SudokuCell.vue';
+import { detectCompletions } from '@/utils/completionDetector';
 import type { SudokuCell as SudokuCellType, GameState } from '@/types/sudoku';
 
 interface Props {
@@ -47,6 +49,10 @@ const flattenedGrid = computed(() => {
     }
   }
   return grid;
+});
+
+const completions = computed(() => {
+  return detectCompletions(props.gameState.userGrid);
 });
 
 const selectCell = (rowIndex: number, colIndex: number) => {
