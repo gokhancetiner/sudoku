@@ -28,6 +28,7 @@ describe('SudokuGrid.vue', () => {
     hintsUsed: 0,
     timeElapsed: 0,
     isGameOver: false,
+    errorsCount: 0,
   });
 
   it('should renders the component', () => {
