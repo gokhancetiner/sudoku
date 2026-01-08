@@ -16,6 +16,16 @@
         {{ capitalizeFirstLetter(difficulty) }}
       </button>
     </div>
+
+    <!-- New Game Button -->
+    <div class="mt-6 pt-6 border-t border-gray-200">
+      <button
+        @click="handleNewGame"
+        class="w-full px-4 py-2 rounded-lg font-medium transition-all duration-200 bg-red-500 text-white hover:bg-red-600"
+      >
+        🔄 New Game
+      </button>
+    </div>
   </div>
 </template>
 
@@ -28,6 +38,7 @@ interface Props {
 
 interface Emits {
   (e: 'change-difficulty', difficulty: Difficulty): void;
+  (e: 'new-game'): void;
 }
 
 const difficulties: Difficulty[] = [
@@ -42,6 +53,10 @@ const emit = defineEmits<Emits>();
 
 const selectDifficulty = (difficulty: Difficulty) => {
   emit('change-difficulty', difficulty);
+};
+
+const handleNewGame = () => {
+  emit('new-game');
 };
 
 const capitalizeFirstLetter = (str: string): string => {

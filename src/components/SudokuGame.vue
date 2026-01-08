@@ -39,6 +39,7 @@
       <GameDifficulty
         :current-difficulty="gameState.difficulty"
         @change-difficulty="changeDifficulty"
+        @new-game="startNewGame"
       />
     </aside>
 
@@ -58,7 +59,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import SudokuGrid from './SudokuGrid.vue';
 import GameInfo from './GameInfo.vue';
 import GameDifficulty from './GameDifficulty.vue';
@@ -71,6 +72,7 @@ import {
   isSolutionCorrect,
 } from '@/utils/sudokuValidator';
 import { calculateFinalScore, getScoreBreakdown } from '@/utils/scoringSystem';
+import { saveGameState, loadGameState, clearGameState } from '@/utils/storage';
 import type { GameState, Difficulty } from '@/types/sudoku';
 
 // State
@@ -121,6 +123,15 @@ const currentScoreBreakdown = computed(() => {
     gameState.value.errorsCount,
   );
 });
+
+// Watch gameState for changes and save to localStorage
+watch(
+  () => gameState.value,
+  (newState) => {
+    saveGameState(newState);
+  },
+  { deep: true },
+);
 
 // Methods
 const initializeGame = () => {
@@ -205,6 +216,14 @@ const changeDifficulty = (difficulty: Difficulty) => {
   initializeGame();
 };
 
+const startNewGame = () => {
+  clearGameState();
+  gameState.value.score = 0;
+  gameState.value.hintsUsed = 0;
+  gameState.value.timeElapsed = 0;
+  initializeGame();
+};
+
 const handleNewPuzzle = () => {
   gameState.value.isGameOver = false;
   initializeGame();
@@ -265,7 +284,21 @@ const handleKeyPress = (event: KeyboardEvent) => {
 };
 
 onMounted(() => {
-  initializeGame();
+  // Try to load saved game state
+  const savedState = loadGameState();
+  if (savedState) {
+    gameState.value = savedState;
+    // Resume timer from saved elapsed time
+    if (timerInterval !== null) {
+      clearInterval(timerInterval);
+    }
+    timerInterval = setInterval(() => {
+      gameState.value.timeElapsed += 1;
+    }, 1000);
+  } else {
+    // Start fresh game if no saved state
+    initializeGame();
+  }
   window.addEventListener('keydown', handleKeyPress);
 });
 

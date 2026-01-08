@@ -28,6 +28,7 @@ export default [
         clearTimeout: 'readonly',
         console: 'readonly',
         KeyboardEvent: 'readonly',
+        localStorage: 'readonly',
       },
       parser: vueParser,
       parserOptions: {
