@@ -4,6 +4,7 @@
     :class="[
       cellClasses,
       isSelected ? 'ring-2 ring-sudoku-highlight ring-inset' : '',
+      borderClasses,
     ]"
     @click="selectCell"
   >
@@ -54,6 +55,28 @@ const cellClasses = computed(() => {
     classes.push('bg-gray-100');
   } else {
     classes.push('bg-white hover:bg-gray-50');
+  }
+
+  return classes;
+});
+
+const borderClasses = computed(() => {
+  const classes: string[] = [];
+  const row = props.rowIndex;
+  const col = props.colIndex;
+
+  // Darker borders on edges of 3x3 boxes
+  if (row % 3 === 0) {
+    classes.push('border-t-gray-800');
+  }
+  if (row % 3 === 2) {
+    classes.push('border-b-gray-800');
+  }
+  if (col % 3 === 0) {
+    classes.push('border-l-gray-800');
+  }
+  if (col % 3 === 2) {
+    classes.push('border-r-gray-800');
   }
 
   return classes;

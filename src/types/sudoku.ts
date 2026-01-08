@@ -16,4 +16,5 @@ export interface GameState {
   hintsUsed: number;
   timeElapsed: number;
   isGameOver: boolean;
+  errorsCount: number;
 }

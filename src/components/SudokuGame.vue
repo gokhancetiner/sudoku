@@ -40,6 +40,19 @@
         @select-digit="selectDigit"
       />
     </aside>
+
+    <!-- Game Completion Modal -->
+    <GameCompletion
+      :is-visible="gameState.isGameOver"
+      :score-breakdown="currentScoreBreakdown"
+      :elapsed-time="gameState.timeElapsed"
+      :hints-used="gameState.hintsUsed"
+      :error-count="gameState.errorsCount"
+      :difficulty="gameState.difficulty"
+      @restart="initializeGame"
+      @new-puzzle="handleNewPuzzle"
+      @close="closeCompletionModal"
+    />
   </main>
 </template>
 
@@ -49,12 +62,14 @@ import SudokuGrid from './SudokuGrid.vue';
 import GameInfo from './GameInfo.vue';
 import GameDifficulty from './GameDifficulty.vue';
 import AvailableDigits from './AvailableDigits.vue';
+import GameCompletion from './GameCompletion.vue';
 import { generatePuzzle, createEmptyGrid } from '@/utils/puzzleGenerator';
 import {
   placeNumber,
   clearCell,
   isSolutionCorrect,
 } from '@/utils/sudokuValidator';
+import { calculateFinalScore, getScoreBreakdown } from '@/utils/scoringSystem';
 import type { GameState, Difficulty } from '@/types/sudoku';
 
 // State
@@ -83,6 +98,7 @@ const gameState = ref<GameState>({
   hintsUsed: 0,
   timeElapsed: 0,
   isGameOver: false,
+  errorsCount: 0,
 });
 
 // Computed
@@ -94,6 +110,15 @@ const difficultyLabel = computed(() => {
     expert: '⚫ Expert',
   };
   return labels[gameState.value.difficulty];
+});
+
+const currentScoreBreakdown = computed(() => {
+  return getScoreBreakdown(
+    gameState.value.userGrid,
+    gameState.value.solution,
+    gameState.value.hintsUsed,
+    gameState.value.errorsCount,
+  );
 });
 
 // Methods
@@ -114,6 +139,7 @@ const initializeGame = () => {
   gameState.value.timeElapsed = 0;
   gameState.value.score = 0;
   gameState.value.hintsUsed = 0;
+  gameState.value.errorsCount = 0;
 
   // Clear existing timer if any
   if (timerInterval !== null) {
@@ -178,6 +204,15 @@ const changeDifficulty = (difficulty: Difficulty) => {
   initializeGame();
 };
 
+const handleNewPuzzle = () => {
+  gameState.value.isGameOver = false;
+  initializeGame();
+};
+
+const closeCompletionModal = () => {
+  gameState.value.isGameOver = false;
+};
+
 // Keyboard event handler for number input
 const handleKeyPress = (event: KeyboardEvent) => {
   if (selectedRow.value === -1 || selectedCol.value === -1) return;
@@ -214,6 +249,17 @@ const handleKeyPress = (event: KeyboardEvent) => {
 
   if (isSolutionCorrect(gameState.value.userGrid, gameState.value.solution)) {
     gameState.value.isGameOver = true;
+    // Calculate final score when game is completed
+    gameState.value.score = calculateFinalScore(
+      gameState.value.userGrid,
+      gameState.value.solution,
+      gameState.value.hintsUsed,
+      gameState.value.errorsCount,
+    );
+    // Stop timer
+    if (timerInterval !== null) {
+      clearInterval(timerInterval);
+    }
   }
 };
 
