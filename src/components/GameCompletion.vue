@@ -93,18 +93,16 @@
 
         <!-- Actions -->
         <div class="border-t p-4 flex gap-3">
-          <button
-            @click="$emit('restart')"
-            class="flex-1 bg-sudoku-highlight hover:bg-sudoku-highlight/90 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
-          >
+          <BaseButton full-width @click="$emit('restart')">
             Play Again
-          </button>
-          <button
+          </BaseButton>
+          <BaseButton
+            variant="secondary"
+            full-width
             @click="$emit('new-puzzle')"
-            class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-900 font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
           >
             New Puzzle
-          </button>
+          </BaseButton>
         </div>
       </div>
     </div>
@@ -114,6 +112,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useGameStore } from '@/stores/gameStore';
+import { BaseButton } from '@/components/ui';
 import { getScoreBreakdown } from '@/utils/scoringSystem';
 import type { Difficulty } from '@/types/sudoku';
 

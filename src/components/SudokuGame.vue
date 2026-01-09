@@ -17,32 +17,22 @@
             </h2>
             <!-- Undo/Redo Buttons -->
             <div class="flex gap-2">
-              <button
-                @click="handleUndo"
+              <BaseButton
+                variant="icon"
                 :disabled="!canUndoMove"
-                class="px-4 py-2 rounded-lg font-medium transition-all duration-200 whitespace-nowrap"
-                :class="
-                  canUndoMove
-                    ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                "
                 title="Undo (Ctrl+Z)"
+                @click="handleUndo"
               >
                 ↶ Undo
-              </button>
-              <button
-                @click="handleRedo"
+              </BaseButton>
+              <BaseButton
+                variant="icon"
                 :disabled="!canRedoMove"
-                class="px-4 py-2 rounded-lg font-medium transition-all duration-200 whitespace-nowrap"
-                :class="
-                  canRedoMove
-                    ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                "
                 title="Redo (Ctrl+Shift+Z)"
+                @click="handleRedo"
               >
                 ↷ Redo
-              </button>
+              </BaseButton>
             </div>
           </div>
           <div class="flex justify-center">
@@ -77,6 +67,7 @@ import GameInfo from './GameInfo.vue';
 import AvailableDigits from './AvailableDigits.vue';
 import GameCompletion from './GameCompletion.vue';
 import LeaderboardTable from './LeaderboardTable.vue';
+import { BaseButton } from '@/components/ui';
 import { generatePuzzle } from '@/utils/puzzleGenerator';
 import { placeNumber } from '@/utils/sudokuValidator';
 import { saveGameState, loadGameState } from '@/utils/storage';

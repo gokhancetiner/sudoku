@@ -6,19 +6,20 @@
       <div class="flex gap-2 items-center">
         <span class="text-sm text-gray-600 font-medium">Level:</span>
         <div class="flex gap-2 flex-wrap">
-          <button
+          <BaseButton
             v-for="diff in difficulties"
             :key="diff"
-            @click="handleChangeDifficulty(diff)"
-            class="px-3 py-1 rounded-full text-sm font-medium transition-all duration-200"
+            variant="pill"
+            size="sm"
             :class="
               store.gameState.difficulty === diff
-                ? 'bg-sudoku-highlight text-white shadow-md'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'ring-2 ring-sudoku-highlight'
+                : ''
             "
+            @click="handleChangeDifficulty(diff)"
           >
             {{ getDifficultyEmoji(diff) }} {{ capitalizeFirstLetter(diff) }}
-          </button>
+          </BaseButton>
         </div>
       </div>
       <!-- Time -->
@@ -38,18 +39,12 @@
       </div>
 
       <!-- Hint Button -->
-      <button
-        @click="handleShowHint"
+      <BaseButton
         :disabled="store.gameState.hintsUsed >= 10"
-        class="px-6 py-2 rounded-lg font-medium transition-all duration-200 whitespace-nowrap"
-        :class="
-          store.gameState.hintsUsed >= 10
-            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-            : 'bg-sudoku-hint text-white hover:bg-opacity-90'
-        "
+        @click="handleShowHint"
       >
         💡 ({{ store.gameState.hintsUsed }}/10)
-      </button>
+      </BaseButton>
     </div>
   </div>
 </template>
@@ -57,6 +52,7 @@
 <script setup lang="ts">
 import { useGameStore } from '@/stores/gameStore';
 import { useRealtimeScoring } from '@/composables/useRealtimeScoring';
+import { BaseButton } from '@/components/ui';
 import type { Difficulty } from '@/types/sudoku';
 
 const store = useGameStore();

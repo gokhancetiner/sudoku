@@ -2,20 +2,14 @@
   <div>
     <h3 class="text-lg font-bold text-gray-900 mb-4">Available Digits</h3>
     <div class="flex justify-center gap-2">
-      <button
+      <BaseButton
         v-for="digit in digits"
         :key="digit"
-        class="py-2 px-3 rounded-lg font-bold text-lg transition-all duration-200"
-        :class="[
-          isDigitComplete(digit)
-            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-            : 'bg-sudoku-highlight text-white hover:bg-blue-600 cursor-pointer',
-        ]"
         :disabled="isDigitComplete(digit)"
         @click="selectDigit(digit)"
       >
         {{ digit }}
-      </button>
+      </BaseButton>
     </div>
     <p class="text-xs text-gray-500 mt-4 text-center">
       {{ completedCount }}/9 digits completed
@@ -26,6 +20,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useGameStore } from '@/stores/gameStore';
+import { BaseButton } from '@/components/ui';
 import { placeNumber } from '@/utils/sudokuValidator';
 
 const store = useGameStore();
