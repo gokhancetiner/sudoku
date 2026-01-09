@@ -3,9 +3,9 @@
     <!-- Game Info Card (Horizontal) -->
     <div class="bg-white rounded-lg shadow-lg p-6">
       <GameInfo
-        :time-elapsed="gameState.timeElapsed"
-        :hints-used="gameState.hintsUsed"
-        :current-difficulty="gameState.difficulty"
+        :time-elapsed="store.gameState.timeElapsed"
+        :hints-used="store.gameState.hintsUsed"
+        :current-difficulty="store.gameState.difficulty"
         @show-hint="showHint"
         @change-difficulty="changeDifficulty"
       />
@@ -19,7 +19,7 @@
           <!-- Grid Header with Title and Undo/Redo Buttons -->
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-xl font-bold text-gray-900">
-              {{ difficultyLabel }} - Sudoku Grid
+              {{ store.difficultyLabel }} - Sudoku Grid
             </h2>
             <!-- Undo/Redo Buttons -->
             <div class="flex gap-2">
@@ -53,9 +53,9 @@
           </div>
           <div class="flex justify-center">
             <SudokuGrid
-              :game-state="gameState"
-              :selected-row="selectedRow"
-              :selected-col="selectedCol"
+              :game-state="store.gameState"
+              :selected-row="store.selectedRow"
+              :selected-col="store.selectedCol"
               @select-cell="selectCell"
             />
           </div>
@@ -64,9 +64,11 @@
           <div class="mt-8 pt-3 border-t border-gray-300">
             <AvailableDigits
               :user-grid="
-                gameState.userGrid.map((row) => row.map((cell) => cell.value))
+                store.gameState.userGrid.map((row) =>
+                  row.map((cell) => cell.value),
+                )
               "
-              :solution="gameState.solution"
+              :solution="store.gameState.solution"
               @select-digit="selectDigit"
             />
           </div>
@@ -80,12 +82,12 @@
 
     <!-- Game Completion Modal -->
     <GameCompletion
-      :is-visible="gameState.isGameOver"
+      :is-visible="store.gameState.isGameOver"
       :score-breakdown="currentScoreBreakdown"
-      :elapsed-time="gameState.timeElapsed"
-      :hints-used="gameState.hintsUsed"
-      :error-count="gameState.errorsCount"
-      :difficulty="gameState.difficulty"
+      :elapsed-time="store.gameState.timeElapsed"
+      :hints-used="store.gameState.hintsUsed"
+      :error-count="store.gameState.errorsCount"
+      :difficulty="store.gameState.difficulty"
       @restart="initializeGame"
       @new-puzzle="handleNewPuzzle"
       @close="closeCompletionModal"
@@ -100,7 +102,7 @@ import GameInfo from './GameInfo.vue';
 import AvailableDigits from './AvailableDigits.vue';
 import GameCompletion from './GameCompletion.vue';
 import LeaderboardTable from './LeaderboardTable.vue';
-import { generatePuzzle, createEmptyGrid } from '@/utils/puzzleGenerator';
+import { generatePuzzle } from '@/utils/puzzleGenerator';
 import {
   placeNumber,
   clearCell,
@@ -118,57 +120,25 @@ import {
   canRedo,
   type HistoryState,
 } from '@/utils/historyManager';
-import type { GameState, Difficulty } from '@/types/sudoku';
+import { useGameStore } from '@/stores/gameStore';
+import type { Difficulty } from '@/types/sudoku';
 
-// State
-const selectedRow = ref<number>(-1);
-const selectedCol = ref<number>(-1);
-const selectedDigit = ref<number>(-1);
+// Store
+const store = useGameStore();
+
+// Local state
 const leaderboardRefreshKey = ref<number>(0);
 let timerInterval: ReturnType<typeof setInterval> | null = null;
-
-const gameState = ref<GameState>({
-  puzzle: createEmptyGrid(),
-  solution: createEmptyGrid(),
-  userGrid: Array(9)
-    .fill(null)
-    .map(() =>
-      Array(9)
-        .fill(null)
-        .map(() => ({
-          value: 0,
-          isOriginal: false,
-          isSelected: false,
-          hasError: false,
-        })),
-    ),
-  difficulty: 'intermediate',
-  score: 0,
-  hintsUsed: 0,
-  timeElapsed: 0,
-  isGameOver: false,
-  errorsCount: 0,
-});
 
 let gameHistory = ref<HistoryState | null>(null);
 
 // Computed
-const difficultyLabel = computed(() => {
-  const labels: Record<Difficulty, string> = {
-    beginner: '🟢 Beginner',
-    intermediate: '🟡 Intermediate',
-    hard: '🔴 Hard',
-    expert: '⚫ Expert',
-  };
-  return labels[gameState.value.difficulty];
-});
-
 const currentScoreBreakdown = computed(() => {
   return getScoreBreakdown(
-    gameState.value.userGrid,
-    gameState.value.solution,
-    gameState.value.hintsUsed,
-    gameState.value.errorsCount,
+    store.gameState.userGrid,
+    store.gameState.solution,
+    store.gameState.hintsUsed,
+    store.gameState.errorsCount,
   );
 });
 const canUndoMove = computed(() => {
@@ -181,7 +151,7 @@ const canRedoMove = computed(() => {
 
 // Watch gameState for changes and save to localStorage
 watch(
-  () => gameState.value,
+  () => store.gameState,
   (newState) => {
     saveGameState(newState);
   },
@@ -189,36 +159,33 @@ watch(
 );
 
 // Watch selectedDigit to place number when digit is selected and cell is already selected
-watch(selectedDigit, (newDigit) => {
-  if (newDigit !== -1 && selectedRow.value !== -1 && selectedCol.value !== -1) {
-    const cell = gameState.value.userGrid[selectedRow.value][selectedCol.value];
-    if (!cell.isOriginal && newDigit >= 1 && newDigit <= 9) {
-      placeNumber(
-        gameState.value.userGrid,
-        selectedRow.value,
-        selectedCol.value,
-        newDigit,
-      );
-      pushMoveToHistory();
-      // Reset selected digit after placing
-      selectedDigit.value = -1;
+watch(
+  () => store.selectedDigit,
+  (newDigit: number) => {
+    if (
+      newDigit !== -1 &&
+      store.selectedRow !== -1 &&
+      store.selectedCol !== -1
+    ) {
+      const { userGrid } = store.gameState;
+      const cell = userGrid[store.selectedRow][store.selectedCol];
+      if (!cell.isOriginal && newDigit >= 1 && newDigit <= 9) {
+        placeNumber(userGrid, store.selectedRow, store.selectedCol, newDigit);
+        pushMoveToHistory();
+        // Reset selected digit after placing
+        store.selectedDigit = -1;
+      }
     }
-  }
-});
+  },
+);
 
 // Methods
-const pushMoveToHistory = () => {
-  if (gameHistory.value) {
-    gameHistory.value = pushToHistory(gameHistory.value, gameState.value);
-  }
-};
-
 const initializeGame = () => {
-  const { puzzle, solution } = generatePuzzle(gameState.value.difficulty);
+  const { puzzle, solution } = generatePuzzle(store.gameState.difficulty);
 
-  gameState.value.puzzle = puzzle;
-  gameState.value.solution = solution;
-  gameState.value.userGrid = puzzle.map((row) =>
+  store.gameState.puzzle = puzzle;
+  store.gameState.solution = solution;
+  store.gameState.userGrid = puzzle.map((row) =>
     row.map((cell) => ({
       value: cell,
       isOriginal: cell !== 0,
@@ -226,14 +193,14 @@ const initializeGame = () => {
       hasError: false,
     })),
   );
-  gameState.value.isGameOver = false;
-  gameState.value.timeElapsed = 0;
-  gameState.value.score = 0;
-  gameState.value.hintsUsed = 0;
-  gameState.value.errorsCount = 0;
+  store.gameState.isGameOver = false;
+  store.gameState.timeElapsed = 0;
+  store.gameState.score = 0;
+  store.gameState.hintsUsed = 0;
+  store.gameState.errorsCount = 0;
 
   // Initialize history for new game
-  gameHistory.value = createHistory(gameState.value);
+  gameHistory.value = createHistory(store.gameState);
 
   // Clear existing timer if any
   if (timerInterval !== null) {
@@ -242,42 +209,42 @@ const initializeGame = () => {
 
   // Start timer
   timerInterval = setInterval(() => {
-    gameState.value.timeElapsed += 1;
+    store.gameState.timeElapsed += 1;
   }, 1000);
   leaderboardRefreshKey.value++;
 };
 
 const selectCell = (rowIndex: number, colIndex: number) => {
-  const cell = gameState.value.userGrid[rowIndex][colIndex];
+  const cell = store.gameState.userGrid[rowIndex][colIndex];
 
   // If a digit is already selected, place it immediately
   if (
-    selectedDigit.value !== -1 &&
+    store.selectedDigit !== -1 &&
     !cell.isOriginal &&
-    selectedDigit.value >= 1 &&
-    selectedDigit.value <= 9
+    store.selectedDigit >= 1 &&
+    store.selectedDigit <= 9
   ) {
     placeNumber(
-      gameState.value.userGrid,
+      store.gameState.userGrid,
       rowIndex,
       colIndex,
-      selectedDigit.value,
+      store.selectedDigit,
     );
     pushMoveToHistory();
   }
 
   // Always select the cell
-  selectedRow.value = rowIndex;
-  selectedCol.value = colIndex;
+  store.selectedRow = rowIndex;
+  store.selectedCol = colIndex;
 };
 
 const selectDigit = (digit: number) => {
-  selectedDigit.value = digit;
+  store.selectedDigit = digit;
 };
 
 const showHint = () => {
   // Check if max hints reached
-  if (gameState.value.hintsUsed >= 10) {
+  if (store.gameState.hintsUsed >= 10) {
     return;
   }
 
@@ -285,7 +252,7 @@ const showHint = () => {
   const emptyCells: Array<[number, number]> = [];
   for (let i = 0; i < 9; i++) {
     for (let j = 0; j < 9; j++) {
-      const cell = gameState.value.userGrid[i][j];
+      const cell = store.gameState.userGrid[i][j];
       if (cell.value === 0 && !cell.isOriginal) {
         emptyCells.push([i, j]);
       }
@@ -302,32 +269,32 @@ const showHint = () => {
   const [row, col] = emptyCells[randomIndex];
 
   // Fill with correct answer from solution
-  const correctValue = gameState.value.solution[row][col];
-  gameState.value.userGrid[row][col].value = correctValue;
-  gameState.value.userGrid[row][col].hasError = false;
+  const correctValue = store.gameState.solution[row][col];
+  store.gameState.userGrid[row][col].value = correctValue;
+  store.gameState.userGrid[row][col].hasError = false;
 
   // Increment hints used
-  gameState.value.hintsUsed += 1;
+  store.gameState.hintsUsed += 1;
 
   // Push to history
   pushMoveToHistory();
 };
 
 const changeDifficulty = (difficulty: Difficulty) => {
-  gameState.value.difficulty = difficulty;
-  gameState.value.score = 0;
-  gameState.value.hintsUsed = 0;
-  gameState.value.timeElapsed = 0;
+  store.gameState.difficulty = difficulty;
+  store.gameState.score = 0;
+  store.gameState.hintsUsed = 0;
+  store.gameState.timeElapsed = 0;
   initializeGame();
 };
 
 const handleNewPuzzle = () => {
-  gameState.value.isGameOver = false;
+  store.gameState.isGameOver = false;
   initializeGame();
 };
 
 const closeCompletionModal = () => {
-  gameState.value.isGameOver = false;
+  store.gameState.isGameOver = false;
 };
 
 const handleUndo = () => {
@@ -335,7 +302,7 @@ const handleUndo = () => {
   const undoResult = undo(gameHistory.value);
   gameHistory.value = undoResult.history;
   if (undoResult.state) {
-    gameState.value = undoResult.state;
+    store.gameState = undoResult.state;
   }
 };
 
@@ -344,7 +311,7 @@ const handleRedo = () => {
   const redoResult = redo(gameHistory.value);
   gameHistory.value = redoResult.history;
   if (redoResult.state) {
-    gameState.value = redoResult.state;
+    store.gameState = redoResult.state;
   }
 };
 
@@ -368,52 +335,52 @@ const handleKeyPress = (event: KeyboardEvent) => {
     return;
   }
 
-  if (selectedRow.value === -1 || selectedCol.value === -1) return;
+  if (store.selectedRow === -1 || store.selectedCol === -1) return;
 
-  const cell = gameState.value.userGrid[selectedRow.value][selectedCol.value];
+  const cell = store.gameState.userGrid[store.selectedRow][store.selectedCol];
 
   const key = event.key;
 
   if (key >= '1' && key <= '9' && !cell.isOriginal) {
     event.preventDefault();
     placeNumber(
-      gameState.value.userGrid,
-      selectedRow.value,
-      selectedCol.value,
+      store.gameState.userGrid,
+      store.selectedRow,
+      store.selectedCol,
       parseInt(key),
     );
     pushMoveToHistory();
   } else if ((key === 'Backspace' || key === 'Delete') && !cell.isOriginal) {
     event.preventDefault();
-    clearCell(gameState.value.userGrid, selectedRow.value, selectedCol.value);
+    clearCell(store.gameState.userGrid, store.selectedRow, store.selectedCol);
     pushMoveToHistory();
   } else if (key === 'ArrowUp') {
     event.preventDefault();
-    selectedRow.value = Math.max(0, selectedRow.value - 1);
+    store.selectedRow = Math.max(0, store.selectedRow - 1);
   } else if (key === 'ArrowDown') {
     event.preventDefault();
-    selectedRow.value = Math.min(8, selectedRow.value + 1);
+    store.selectedRow = Math.min(8, store.selectedRow + 1);
   } else if (key === 'ArrowLeft') {
     event.preventDefault();
-    selectedCol.value = Math.max(0, selectedCol.value - 1);
+    store.selectedCol = Math.max(0, store.selectedCol - 1);
   } else if (key === 'ArrowRight') {
     event.preventDefault();
-    selectedCol.value = Math.min(8, selectedCol.value + 1);
+    store.selectedCol = Math.min(8, store.selectedCol + 1);
   }
-  if (isSolutionCorrect(gameState.value.userGrid, gameState.value.solution)) {
-    gameState.value.isGameOver = true;
+  if (isSolutionCorrect(store.gameState.userGrid, store.gameState.solution)) {
+    store.gameState.isGameOver = true;
     // Calculate final score when game is completed
-    gameState.value.score = calculateFinalScore(
-      gameState.value.userGrid,
-      gameState.value.solution,
-      gameState.value.hintsUsed,
-      gameState.value.errorsCount,
+    store.gameState.score = calculateFinalScore(
+      store.gameState.userGrid,
+      store.gameState.solution,
+      store.gameState.hintsUsed,
+      store.gameState.errorsCount,
     );
     // Save to leaderboard
     addLeaderboardEntry(
-      gameState.value.score,
-      gameState.value.difficulty,
-      gameState.value.timeElapsed,
+      store.gameState.score,
+      store.gameState.difficulty,
+      store.gameState.timeElapsed,
     );
     // Stop timer
     if (timerInterval !== null) {
@@ -424,18 +391,24 @@ const handleKeyPress = (event: KeyboardEvent) => {
   }
 };
 
+const pushMoveToHistory = () => {
+  if (gameHistory.value) {
+    gameHistory.value = pushToHistory(gameHistory.value, store.gameState);
+  }
+};
+
 onMounted(() => {
   // Try to load saved game state
   const savedState = loadGameState();
   if (savedState) {
-    gameState.value = savedState;
-    gameHistory.value = createHistory(gameState.value);
+    store.gameState = savedState;
+    gameHistory.value = createHistory(store.gameState);
     // Resume timer from saved elapsed time
     if (timerInterval !== null) {
       clearInterval(timerInterval);
     }
     timerInterval = setInterval(() => {
-      gameState.value.timeElapsed += 1;
+      store.gameState.timeElapsed += 1;
     }, 1000);
   } else {
     // Start fresh game if no saved state

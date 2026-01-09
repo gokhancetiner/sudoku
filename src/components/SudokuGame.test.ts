@@ -1,13 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import SudokuGame from './SudokuGame.vue';
-import type { GameState, SudokuCell } from '../types/sudoku';
-
-interface SudokuGameInstance {
-  gameState: GameState;
-  selectedRow: number;
-  selectedCol: number;
-}
+import { useGameStore } from '@/stores/gameStore';
+import type { SudokuCell } from '../types/sudoku';
 
 describe('SudokuGame.vue', () => {
   it('should renders the component', () => {
@@ -42,13 +37,13 @@ describe('SudokuGame.vue', () => {
 
   it('should handles cell selection', async () => {
     const wrapper = mount(SudokuGame);
+    const store = useGameStore();
     const sudokuGrid = wrapper.findComponent({ name: 'SudokuGrid' });
 
     await sudokuGrid.vm.$emit('select-cell', 3, 4);
 
-    const instance = wrapper.vm as unknown as SudokuGameInstance;
-    expect(instance.selectedRow).toBe(3);
-    expect(instance.selectedCol).toBe(4);
+    expect(store.selectedRow).toBe(3);
+    expect(store.selectedCol).toBe(4);
   });
 
   it('should displays correct difficulty label', async () => {
@@ -71,16 +66,16 @@ describe('SudokuGame.vue', () => {
 
   it('should fill a random empty cell with hint', async () => {
     const wrapper = mount(SudokuGame);
-    const instance = wrapper.vm as unknown as SudokuGameInstance;
+    const store = useGameStore();
 
-    const initialEmpty = instance.gameState.userGrid
+    const initialEmpty = store.gameState.userGrid
       .flat()
       .filter((cell: SudokuCell) => cell.value === 0).length;
 
     const gameInfo = wrapper.findComponent({ name: 'GameInfo' });
     await gameInfo.vm.$emit('show-hint');
 
-    const afterHintEmpty = instance.gameState.userGrid
+    const afterHintEmpty = store.gameState.userGrid
       .flat()
       .filter((cell: { value: number }) => cell.value === 0).length;
 
@@ -90,7 +85,7 @@ describe('SudokuGame.vue', () => {
 
   it('should not exceed maximum hints (10)', async () => {
     const wrapper = mount(SudokuGame);
-    const instance = wrapper.vm as unknown as SudokuGameInstance;
+    const store = useGameStore();
 
     const gameInfo = wrapper.findComponent({ name: 'GameInfo' });
 
@@ -100,6 +95,6 @@ describe('SudokuGame.vue', () => {
     }
 
     // Should only have 10 hints used (not 15)
-    expect(instance.gameState.hintsUsed).toBe(10);
+    expect(store.gameState.hintsUsed).toBe(10);
   });
 });
