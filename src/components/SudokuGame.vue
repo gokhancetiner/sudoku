@@ -57,7 +57,7 @@
       </div>
 
       <aside class="lg:w-64 space-y-6 flex flex-col">
-        <LeaderboardTable :key="leaderboardRefreshKey" />
+        <LeaderboardTable />
       </aside>
     </div>
 
@@ -71,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { onMounted, onUnmounted, watch } from 'vue';
 import SudokuGrid from './SudokuGrid.vue';
 import GameInfo from './GameInfo.vue';
 import AvailableDigits from './AvailableDigits.vue';
@@ -104,9 +104,6 @@ const { handleKeyPress } = useKeyboardControls({
   pushMoveToHistory,
   stopTimer,
 });
-
-// Local state
-const leaderboardRefreshKey = ref<number>(0);
 
 // Watch gameState for changes and save to localStorage
 watch(
@@ -164,7 +161,6 @@ const initializeGame = () => {
   // Reset and start timer
   resetTimer();
   startTimer();
-  leaderboardRefreshKey.value++;
 };
 
 const selectCell = (rowIndex: number, colIndex: number) => {

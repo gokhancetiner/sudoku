@@ -58,8 +58,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { getTopRecords } from '@/utils/leaderboard';
+import { useGameStore } from '@/stores/gameStore';
 import type { Difficulty } from '@/types/sudoku';
+
+const store = useGameStore();
 
 const difficulties: Difficulty[] = [
   'beginner',
@@ -68,9 +70,17 @@ const difficulties: Difficulty[] = [
   'expert',
 ];
 
+// Get records from store (automatically reactive)
 const difficultiesWithRecords = computed(() => {
-  return difficulties.filter((diff) => getTopRecords(diff).length > 0);
+  return difficulties.filter(
+    (diff) => store.getTopRecordsForDifficulty(diff).length > 0,
+  );
 });
+
+// Helper to get top records for difficulty
+const getTopRecords = (difficulty: Difficulty) => {
+  return store.getTopRecordsForDifficulty(difficulty);
+};
 
 const getMedalIcon = (index: number): string => {
   const medals = ['🥇', '🥈', '🥉'];

@@ -6,7 +6,6 @@ import {
 } from '@/utils/sudokuValidator';
 import { calculateFinalScore } from '@/utils/scoringSystem';
 import { clearGameState } from '@/utils/storage';
-import { addLeaderboardEntry } from '@/utils/leaderboard';
 
 interface KeyboardControlsCallbacks {
   pushMoveToHistory: () => void;
@@ -83,8 +82,8 @@ export function useKeyboardControls(callbacks: KeyboardControlsCallbacks) {
         store.gameState.errorsCount,
       );
 
-      // Save to leaderboard
-      addLeaderboardEntry(
+      // Save to leaderboard via store (automatically updates reactive state)
+      store.addRecord(
         store.gameState.score,
         store.gameState.difficulty,
         store.gameState.timeElapsed,
