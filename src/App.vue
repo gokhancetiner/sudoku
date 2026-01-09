@@ -5,8 +5,7 @@
     <div class="max-w-4xl mx-auto">
       <!-- Header -->
       <header class="text-center mb-8">
-        <h1 class="text-4xl font-bold text-gray-900 mb-2">Sudoku Trial Day</h1>
-        <p class="text-gray-600">Vue 3 + TypeScript + TailwindCSS</p>
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">Sudoku</h1>
       </header>
 
       <!-- Game Component -->
