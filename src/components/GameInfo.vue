@@ -29,6 +29,14 @@
         </p>
       </div>
 
+      <!-- Real-time Score -->
+      <div class="flex gap-2 items-center">
+        <p class="text-sm text-gray-600">⭐ Score</p>
+        <p class="text-2xl font-bold text-sudoku-highlight">
+          {{ currentScore }}
+        </p>
+      </div>
+
       <!-- Hint Button -->
       <button
         @click="handleShowHint"
@@ -40,7 +48,7 @@
             : 'bg-sudoku-hint text-white hover:bg-opacity-90'
         "
       >
-        💡 Show Hint ({{ store.gameState.hintsUsed }}/10)
+        💡 ({{ store.gameState.hintsUsed }}/10)
       </button>
     </div>
   </div>
@@ -48,9 +56,11 @@
 
 <script setup lang="ts">
 import { useGameStore } from '@/stores/gameStore';
+import { useRealtimeScoring } from '@/composables/useRealtimeScoring';
 import type { Difficulty } from '@/types/sudoku';
 
 const store = useGameStore();
+const { currentScore } = useRealtimeScoring();
 
 interface Emits {
   (e: 'show-hint'): void;

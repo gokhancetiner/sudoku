@@ -8,6 +8,7 @@ A Sudoku game built with Vue 3, TypeScript, and TailwindCSS as a trial day inter
 - ⏱️ Real-time scoring and timer
 - 💡 Hint system with configurable limits
 - 🏆 Leaderboard with persistent records
+- 📊 Live score tracking (updated as you play)
 - 🎨 Beautiful UI with TailwindCSS
 - 📱 Responsive design
 - ✅ Type-safe TypeScript implementation
@@ -54,12 +55,20 @@ Preview the production build locally
 ```
 src/
 ├── components/       # Vue components
-├── stores/          # State management
+├── composables/      # Reusable logic (timer, history, keyboard controls)
+├── stores/          # Pinia state management (gameState)
 ├── types/           # TypeScript type definitions
 ├── utils/           # Utility functions
 ├── styles/          # Global styles
 └── main.ts          # Application entry point
 ```
+
+### Composables
+
+- **useGameTimer** - Manages game timer (start, stop, reset, resume)
+- **useGameHistory** - Handles undo/redo functionality with history tracking
+- **useKeyboardControls** - Routes keyboard input (digits, arrows, shortcuts)
+- **useRealtimeScoring** - Calculates live score during gameplay with progress tracking
 
 ## Technology Stack
 

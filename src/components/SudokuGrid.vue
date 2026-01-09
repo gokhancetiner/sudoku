@@ -48,7 +48,7 @@ const flattenedGrid = computed(() => {
 });
 
 const completions = computed(() => {
-  return detectCompletions(store.gameState.userGrid);
+  return detectCompletions(store.gameState.userGrid, store.gameState.solution);
 });
 
 const selectCell = (rowIndex: number, colIndex: number) => {
