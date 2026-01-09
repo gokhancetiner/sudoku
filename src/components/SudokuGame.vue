@@ -96,14 +96,17 @@ import {
   type HistoryState,
 } from '@/utils/historyManager';
 import { useGameStore } from '@/stores/gameStore';
+import { useGameTimer } from '@/composables/useGameTimer';
 import type { Difficulty } from '@/types/sudoku';
 
 // Store
 const store = useGameStore();
 
+// Composables
+const { startTimer, stopTimer, resetTimer, resumeTimer } = useGameTimer();
+
 // Local state
 const leaderboardRefreshKey = ref<number>(0);
-let timerInterval: ReturnType<typeof setInterval> | null = null;
 
 let gameHistory = ref<HistoryState | null>(null);
 
@@ -169,15 +172,9 @@ const initializeGame = () => {
   // Initialize history for new game
   gameHistory.value = createHistory(store.gameState);
 
-  // Clear existing timer if any
-  if (timerInterval !== null) {
-    clearInterval(timerInterval);
-  }
-
-  // Start timer
-  timerInterval = setInterval(() => {
-    store.gameState.timeElapsed += 1;
-  }, 1000);
+  // Reset and start timer
+  resetTimer();
+  startTimer();
   leaderboardRefreshKey.value++;
 };
 
@@ -278,26 +275,7 @@ const handleRedo = () => {
   }
 };
 
-// Keyboard event handler for number input
 const handleKeyPress = (event: KeyboardEvent) => {
-  // Handle undo (Ctrl+Z or Cmd+Z)
-  if (
-    (event.ctrlKey || event.metaKey) &&
-    event.key === 'z' &&
-    !event.shiftKey
-  ) {
-    event.preventDefault();
-    handleUndo();
-    return;
-  }
-
-  // Handle redo (Ctrl+Shift+Z or Cmd+Shift+Z)
-  if ((event.ctrlKey || event.metaKey) && event.key === 'z' && event.shiftKey) {
-    event.preventDefault();
-    handleRedo();
-    return;
-  }
-
   if (store.selectedRow === -1 || store.selectedCol === -1) return;
 
   const cell = store.gameState.userGrid[store.selectedRow][store.selectedCol];
@@ -346,9 +324,7 @@ const handleKeyPress = (event: KeyboardEvent) => {
       store.gameState.timeElapsed,
     );
     // Stop timer
-    if (timerInterval !== null) {
-      clearInterval(timerInterval);
-    }
+    stopTimer();
 
     clearGameState();
   }
@@ -367,12 +343,7 @@ onMounted(() => {
     store.gameState = savedState;
     gameHistory.value = createHistory(store.gameState);
     // Resume timer from saved elapsed time
-    if (timerInterval !== null) {
-      clearInterval(timerInterval);
-    }
-    timerInterval = setInterval(() => {
-      store.gameState.timeElapsed += 1;
-    }, 1000);
+    resumeTimer();
   } else {
     // Start fresh game if no saved state
     initializeGame();
@@ -382,9 +353,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyPress);
-  if (timerInterval !== null) {
-    clearInterval(timerInterval);
-  }
+  stopTimer();
 });
 </script>
 
