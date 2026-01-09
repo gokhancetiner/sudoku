@@ -22,17 +22,18 @@ describe('SudokuGame.vue', () => {
 
   it('should renders GameInfo component with difficulty', () => {
     const wrapper = mount(SudokuGame);
+    const store = useGameStore();
     const gameInfo = wrapper.findComponent({ name: 'GameInfo' });
     expect(gameInfo.exists()).toBe(true);
-    expect(gameInfo.props('currentDifficulty')).toBe('intermediate');
+    expect(store.gameState.difficulty).toBe('intermediate');
   });
 
   it('should initializes with correct default game state', () => {
-    const wrapper = mount(SudokuGame);
-    const gameInfo = wrapper.findComponent({ name: 'GameInfo' });
+    const store = useGameStore();
+    mount(SudokuGame);
 
-    expect(gameInfo.props('timeElapsed')).toBe(0);
-    expect(gameInfo.props('hintsUsed')).toBe(0);
+    expect(store.gameState.timeElapsed).toBe(0);
+    expect(store.gameState.hintsUsed).toBe(0);
   });
 
   it('should handles cell selection', async () => {

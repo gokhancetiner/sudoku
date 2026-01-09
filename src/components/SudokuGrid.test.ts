@@ -1,9 +1,15 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import SudokuGrid from './SudokuGrid.vue';
+import { useGameStore } from '@/stores/gameStore';
+import { createPinia, setActivePinia } from 'pinia';
 import type { GameState } from '@/types/sudoku';
 
 describe('SudokuGrid.vue', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+  });
+
   const createMockGameState = (): GameState => ({
     puzzle: Array(9)
       .fill(null)
@@ -32,36 +38,33 @@ describe('SudokuGrid.vue', () => {
   });
 
   it('should renders the component', () => {
-    const wrapper = mount(SudokuGrid, {
-      props: {
-        gameState: createMockGameState(),
-        selectedRow: -1,
-        selectedCol: -1,
-      },
-    });
+    const store = useGameStore();
+    store.gameState = createMockGameState();
+    store.selectedRow = -1;
+    store.selectedCol = -1;
+
+    const wrapper = mount(SudokuGrid);
     expect(wrapper.exists()).toBe(true);
   });
 
   it('should renders 81 cells (9x9 grid)', () => {
-    const wrapper = mount(SudokuGrid, {
-      props: {
-        gameState: createMockGameState(),
-        selectedRow: -1,
-        selectedCol: -1,
-      },
-    });
+    const store = useGameStore();
+    store.gameState = createMockGameState();
+    store.selectedRow = -1;
+    store.selectedCol = -1;
+
+    const wrapper = mount(SudokuGrid);
     const cells = wrapper.findAllComponents({ name: 'SudokuCell' });
     expect(cells.length).toBe(81);
   });
 
   it('should emits select-cell event with correct indices', async () => {
-    const wrapper = mount(SudokuGrid, {
-      props: {
-        gameState: createMockGameState(),
-        selectedRow: -1,
-        selectedCol: -1,
-      },
-    });
+    const store = useGameStore();
+    store.gameState = createMockGameState();
+    store.selectedRow = -1;
+    store.selectedCol = -1;
+
+    const wrapper = mount(SudokuGrid);
 
     // Simulate selecting a cell at row 3, col 5
     // Cell index = 3*9 + 5 = 32
@@ -74,13 +77,12 @@ describe('SudokuGrid.vue', () => {
   });
 
   it('should highlights the selected cell', () => {
-    const wrapper = mount(SudokuGrid, {
-      props: {
-        gameState: createMockGameState(),
-        selectedRow: 4,
-        selectedCol: 4,
-      },
-    });
+    const store = useGameStore();
+    store.gameState = createMockGameState();
+    store.selectedRow = 4;
+    store.selectedCol = 4;
+
+    const wrapper = mount(SudokuGrid);
 
     const cells = wrapper.findAllComponents({ name: 'SudokuCell' });
     // Center cell should be selected (row 4, col 4 = index 40)
@@ -88,13 +90,12 @@ describe('SudokuGrid.vue', () => {
   });
 
   it('shouldapplies grid layout with correct styling', () => {
-    const wrapper = mount(SudokuGrid, {
-      props: {
-        gameState: createMockGameState(),
-        selectedRow: -1,
-        selectedCol: -1,
-      },
-    });
+    const store = useGameStore();
+    store.gameState = createMockGameState();
+    store.selectedRow = -1;
+    store.selectedCol = -1;
+
+    const wrapper = mount(SudokuGrid);
 
     const gridContainer = wrapper.find('[style*="grid-template-columns"]');
     expect(gridContainer.exists()).toBe(true);

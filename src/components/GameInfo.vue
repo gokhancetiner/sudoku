@@ -12,7 +12,7 @@
             @click="handleChangeDifficulty(diff)"
             class="px-3 py-1 rounded-full text-sm font-medium transition-all duration-200"
             :class="
-              currentDifficulty === diff
+              store.gameState.difficulty === diff
                 ? 'bg-sudoku-highlight text-white shadow-md'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             "
@@ -25,35 +25,32 @@
       <div class="flex gap-2 items-center">
         <p class="text-sm text-gray-600">⏱️ Time</p>
         <p class="text-2xl font-bold text-gray-900">
-          {{ formatTime(timeElapsed) }}
+          {{ formatTime(store.gameState.timeElapsed) }}
         </p>
       </div>
 
       <!-- Hint Button -->
       <button
         @click="handleShowHint"
-        :disabled="hintsUsed >= 10"
+        :disabled="store.gameState.hintsUsed >= 10"
         class="px-6 py-2 rounded-lg font-medium transition-all duration-200 whitespace-nowrap"
         :class="
-          hintsUsed >= 10
+          store.gameState.hintsUsed >= 10
             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
             : 'bg-sudoku-hint text-white hover:bg-opacity-90'
         "
       >
-        💡 Show Hint ({{ hintsUsed }}/10)
+        💡 Show Hint ({{ store.gameState.hintsUsed }}/10)
       </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useGameStore } from '@/stores/gameStore';
 import type { Difficulty } from '@/types/sudoku';
 
-interface Props {
-  timeElapsed: number;
-  hintsUsed: number;
-  currentDifficulty: Difficulty;
-}
+const store = useGameStore();
 
 interface Emits {
   (e: 'show-hint'): void;
@@ -67,7 +64,6 @@ const difficulties: Difficulty[] = [
   'expert',
 ];
 
-defineProps<Props>();
 const emit = defineEmits<Emits>();
 
 const formatTime = (seconds: number): string => {

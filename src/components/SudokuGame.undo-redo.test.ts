@@ -70,9 +70,6 @@ describe('SudokuGame.vue - Undo/Redo Integration', () => {
   it('should render SudokuGrid component with game state', () => {
     const sudokuGrid = wrapper.findComponent({ name: 'SudokuGrid' });
     expect(sudokuGrid.exists()).toBe(true);
-
-    // Grid should receive game state
-    expect(sudokuGrid.props('gameState')).toBeDefined();
   });
 
   it('should integrate history manager on game initialization', () => {

@@ -10,7 +10,8 @@
           :key="`${Math.floor(index / 9)}-${index % 9}`"
           :cell="cell"
           :is-selected="
-            selectedRow === Math.floor(index / 9) && selectedCol === index % 9
+            store.selectedRow === Math.floor(index / 9) &&
+            store.selectedCol === index % 9
           "
           :row-index="Math.floor(index / 9)"
           :col-index="index % 9"
@@ -26,33 +27,28 @@
 import { computed } from 'vue';
 import SudokuCell from './SudokuCell.vue';
 import { detectCompletions } from '@/utils/completionDetector';
-import type { SudokuCell as SudokuCellType, GameState } from '@/types/sudoku';
-
-interface Props {
-  gameState: GameState;
-  selectedRow: number;
-  selectedCol: number;
-}
+import type { SudokuCell as SudokuCellType } from '@/types/sudoku';
+import { useGameStore } from '@/stores/gameStore';
 
 interface Emits {
   (e: 'select-cell', rowIndex: number, colIndex: number): void;
 }
 
-const props = defineProps<Props>();
+const store = useGameStore();
 const emit = defineEmits<Emits>();
 
 const flattenedGrid = computed(() => {
   const grid: SudokuCellType[] = [];
   for (let i = 0; i < 9; i++) {
     for (let j = 0; j < 9; j++) {
-      grid.push(props.gameState.userGrid[i][j]);
+      grid.push(store.gameState.userGrid[i][j]);
     }
   }
   return grid;
 });
 
 const completions = computed(() => {
-  return detectCompletions(props.gameState.userGrid);
+  return detectCompletions(store.gameState.userGrid);
 });
 
 const selectCell = (rowIndex: number, colIndex: number) => {

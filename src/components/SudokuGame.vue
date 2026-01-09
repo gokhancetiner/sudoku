@@ -2,13 +2,7 @@
   <main class="flex flex-col gap-8">
     <!-- Game Info Card (Horizontal) -->
     <div class="bg-white rounded-lg shadow-lg p-6">
-      <GameInfo
-        :time-elapsed="store.gameState.timeElapsed"
-        :hints-used="store.gameState.hintsUsed"
-        :current-difficulty="store.gameState.difficulty"
-        @show-hint="showHint"
-        @change-difficulty="changeDifficulty"
-      />
+      <GameInfo @show-hint="showHint" @change-difficulty="changeDifficulty" />
     </div>
 
     <!-- Main Game Area -->
@@ -52,12 +46,7 @@
             </div>
           </div>
           <div class="flex justify-center">
-            <SudokuGrid
-              :game-state="store.gameState"
-              :selected-row="store.selectedRow"
-              :selected-col="store.selectedCol"
-              @select-cell="selectCell"
-            />
+            <SudokuGrid @select-cell="selectCell" />
           </div>
 
           <!-- Available Digits Below Grid -->
