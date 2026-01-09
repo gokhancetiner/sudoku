@@ -25,39 +25,35 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useGameStore } from '@/stores/gameStore';
 
-interface Props {
-  userGrid: number[][];
-  solution: number[][];
-}
-
-interface Emits {
-  (e: 'select-digit', digit: number): void;
-}
-
-const props = defineProps<Props>();
-const emit = defineEmits<Emits>();
+const store = useGameStore();
 
 const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 const completedDigits = computed(() => {
   const completed = new Set<number>();
+  const userGrid = store.gameState.userGrid.map((row) =>
+    row.map((cell) => cell.value),
+  );
+  const solution = store.gameState.solution;
+
   for (let i = 0; i < 9; i++) {
     for (let j = 0; j < 9; j++) {
-      if (props.solution[i][j] !== 0) {
+      if (solution[i][j] !== 0) {
         // Check if this digit is complete
         let count = 0;
         for (let k = 0; k < 9; k++) {
           for (let l = 0; l < 9; l++) {
-            if (props.solution[k][l] === props.solution[i][j]) {
-              if (props.userGrid[k][l] === props.solution[k][l]) {
+            if (solution[k][l] === solution[i][j]) {
+              if (userGrid[k][l] === solution[k][l]) {
                 count++;
               }
             }
           }
         }
         if (count === 9) {
-          completed.add(props.solution[i][j]);
+          completed.add(solution[i][j]);
         }
       }
     }
@@ -73,7 +69,7 @@ const isDigitComplete = (digit: number): boolean => {
 
 const selectDigit = (digit: number) => {
   if (!isDigitComplete(digit)) {
-    emit('select-digit', digit);
+    store.selectedDigit = digit;
   }
 };
 </script>

@@ -51,15 +51,7 @@
 
           <!-- Available Digits Below Grid -->
           <div class="mt-8 pt-3 border-t border-gray-300">
-            <AvailableDigits
-              :user-grid="
-                store.gameState.userGrid.map((row) =>
-                  row.map((cell) => cell.value),
-                )
-              "
-              :solution="store.gameState.solution"
-              @select-digit="selectDigit"
-            />
+            <AvailableDigits />
           </div>
         </div>
       </div>
@@ -211,10 +203,6 @@ const selectCell = (rowIndex: number, colIndex: number) => {
   // Always select the cell
   store.selectedRow = rowIndex;
   store.selectedCol = colIndex;
-};
-
-const selectDigit = (digit: number) => {
-  store.selectedDigit = digit;
 };
 
 const showHint = () => {
