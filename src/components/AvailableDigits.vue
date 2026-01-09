@@ -26,6 +26,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useGameStore } from '@/stores/gameStore';
+import { placeNumber } from '@/utils/sudokuValidator';
 
 const store = useGameStore();
 
@@ -68,7 +69,25 @@ const isDigitComplete = (digit: number): boolean => {
 };
 
 const selectDigit = (digit: number) => {
-  if (!isDigitComplete(digit)) {
+  if (isDigitComplete(digit)) {
+    return;
+  }
+
+  // Check if a cell is currently selected
+  if (store.selectedRow !== -1 && store.selectedCol !== -1) {
+    const cell = store.gameState.userGrid[store.selectedRow][store.selectedCol];
+
+    // Only place if cell is not original and digit is valid
+    if (!cell.isOriginal && digit >= 1 && digit <= 9) {
+      placeNumber(
+        store.gameState.userGrid,
+        store.selectedRow,
+        store.selectedCol,
+        digit,
+      );
+    }
+  } else {
+    // No cell selected yet, just mark digit as selected
     store.selectedDigit = digit;
   }
 };

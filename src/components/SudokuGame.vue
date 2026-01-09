@@ -114,27 +114,6 @@ watch(
   { deep: true },
 );
 
-// Watch selectedDigit to place number when digit is selected and cell is already selected
-watch(
-  () => store.selectedDigit,
-  (newDigit: number) => {
-    if (
-      newDigit !== -1 &&
-      store.selectedRow !== -1 &&
-      store.selectedCol !== -1
-    ) {
-      const { userGrid } = store.gameState;
-      const cell = userGrid[store.selectedRow][store.selectedCol];
-      if (!cell.isOriginal && newDigit >= 1 && newDigit <= 9) {
-        placeNumber(userGrid, store.selectedRow, store.selectedCol, newDigit);
-        pushMoveToHistory();
-        // Reset selected digit after placing
-        store.selectedDigit = -1;
-      }
-    }
-  },
-);
-
 // Methods
 const initializeGame = () => {
   const { puzzle, solution } = generatePuzzle(store.gameState.difficulty);
@@ -180,6 +159,7 @@ const selectCell = (rowIndex: number, colIndex: number) => {
       store.selectedDigit,
     );
     pushMoveToHistory();
+    store.selectedDigit = -1; // Reset after placing
   }
 
   // Always select the cell
