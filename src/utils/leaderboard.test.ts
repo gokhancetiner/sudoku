@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
   addLeaderboardEntry,
   getAllRecords,
-  getRecordsByDifficulty,
   getTopRecords,
   clearLeaderboard,
 } from './leaderboard';
@@ -65,19 +64,6 @@ describe('leaderboard.ts', () => {
 
     expect(beginnerRecords.length).toBe(3);
     expect(intermediateRecords.length).toBe(2);
-  });
-
-  it('should get records grouped by difficulty', () => {
-    addLeaderboardEntry(100, 'beginner', 60, 'Alice');
-    addLeaderboardEntry(200, 'intermediate', 65, 'Bob');
-    addLeaderboardEntry(300, 'hard', 70, 'Charlie');
-
-    const grouped = getRecordsByDifficulty();
-
-    expect(grouped.beginner.length).toBe(1);
-    expect(grouped.intermediate.length).toBe(1);
-    expect(grouped.hard.length).toBe(1);
-    expect(grouped.expert.length).toBe(0);
   });
 
   it('should clear all leaderboard records', () => {

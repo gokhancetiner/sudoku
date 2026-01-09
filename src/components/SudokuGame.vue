@@ -16,9 +16,41 @@
       <!-- Game Grid Section -->
       <div class="flex-1">
         <div class="bg-white rounded-lg shadow-xl p-6 h-full">
-          <h2 class="text-xl font-bold text-gray-900 mb-4">
-            {{ difficultyLabel }} - Sudoku Grid
-          </h2>
+          <!-- Grid Header with Title and Undo/Redo Buttons -->
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold text-gray-900">
+              {{ difficultyLabel }} - Sudoku Grid
+            </h2>
+            <!-- Undo/Redo Buttons -->
+            <div class="flex gap-2">
+              <button
+                @click="handleUndo"
+                :disabled="!canUndoMove"
+                class="px-4 py-2 rounded-lg font-medium transition-all duration-200 whitespace-nowrap"
+                :class="
+                  canUndoMove
+                    ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                "
+                title="Undo (Ctrl+Z)"
+              >
+                ↶ Undo
+              </button>
+              <button
+                @click="handleRedo"
+                :disabled="!canRedoMove"
+                class="px-4 py-2 rounded-lg font-medium transition-all duration-200 whitespace-nowrap"
+                :class="
+                  canRedoMove
+                    ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                "
+                title="Redo (Ctrl+Shift+Z)"
+              >
+                ↷ Redo
+              </button>
+            </div>
+          </div>
           <div class="flex justify-center">
             <SudokuGrid
               :game-state="gameState"
@@ -77,6 +109,15 @@ import {
 import { calculateFinalScore, getScoreBreakdown } from '@/utils/scoringSystem';
 import { saveGameState, loadGameState, clearGameState } from '@/utils/storage';
 import { addLeaderboardEntry } from '@/utils/leaderboard';
+import {
+  createHistory,
+  pushToHistory,
+  undo,
+  redo,
+  canUndo,
+  canRedo,
+  type HistoryState,
+} from '@/utils/historyManager';
 import type { GameState, Difficulty } from '@/types/sudoku';
 
 // State
@@ -109,6 +150,8 @@ const gameState = ref<GameState>({
   errorsCount: 0,
 });
 
+let gameHistory = ref<HistoryState | null>(null);
+
 // Computed
 const difficultyLabel = computed(() => {
   const labels: Record<Difficulty, string> = {
@@ -128,6 +171,13 @@ const currentScoreBreakdown = computed(() => {
     gameState.value.errorsCount,
   );
 });
+const canUndoMove = computed(() => {
+  return gameHistory.value && canUndo(gameHistory.value);
+});
+
+const canRedoMove = computed(() => {
+  return gameHistory.value && canRedo(gameHistory.value);
+});
 
 // Watch gameState for changes and save to localStorage
 watch(
@@ -138,7 +188,31 @@ watch(
   { deep: true },
 );
 
+// Watch selectedDigit to place number when digit is selected and cell is already selected
+watch(selectedDigit, (newDigit) => {
+  if (newDigit !== -1 && selectedRow.value !== -1 && selectedCol.value !== -1) {
+    const cell = gameState.value.userGrid[selectedRow.value][selectedCol.value];
+    if (!cell.isOriginal && newDigit >= 1 && newDigit <= 9) {
+      placeNumber(
+        gameState.value.userGrid,
+        selectedRow.value,
+        selectedCol.value,
+        newDigit,
+      );
+      pushMoveToHistory();
+      // Reset selected digit after placing
+      selectedDigit.value = -1;
+    }
+  }
+});
+
 // Methods
+const pushMoveToHistory = () => {
+  if (gameHistory.value) {
+    gameHistory.value = pushToHistory(gameHistory.value, gameState.value);
+  }
+};
+
 const initializeGame = () => {
   const { puzzle, solution } = generatePuzzle(gameState.value.difficulty);
 
@@ -158,6 +232,9 @@ const initializeGame = () => {
   gameState.value.hintsUsed = 0;
   gameState.value.errorsCount = 0;
 
+  // Initialize history for new game
+  gameHistory.value = createHistory(gameState.value);
+
   // Clear existing timer if any
   if (timerInterval !== null) {
     clearInterval(timerInterval);
@@ -171,6 +248,25 @@ const initializeGame = () => {
 };
 
 const selectCell = (rowIndex: number, colIndex: number) => {
+  const cell = gameState.value.userGrid[rowIndex][colIndex];
+
+  // If a digit is already selected, place it immediately
+  if (
+    selectedDigit.value !== -1 &&
+    !cell.isOriginal &&
+    selectedDigit.value >= 1 &&
+    selectedDigit.value <= 9
+  ) {
+    placeNumber(
+      gameState.value.userGrid,
+      rowIndex,
+      colIndex,
+      selectedDigit.value,
+    );
+    pushMoveToHistory();
+  }
+
+  // Always select the cell
   selectedRow.value = rowIndex;
   selectedCol.value = colIndex;
 };
@@ -212,6 +308,9 @@ const showHint = () => {
 
   // Increment hints used
   gameState.value.hintsUsed += 1;
+
+  // Push to history
+  pushMoveToHistory();
 };
 
 const changeDifficulty = (difficulty: Difficulty) => {
@@ -231,8 +330,44 @@ const closeCompletionModal = () => {
   gameState.value.isGameOver = false;
 };
 
+const handleUndo = () => {
+  if (!gameHistory.value || !canUndo(gameHistory.value)) return;
+  const undoResult = undo(gameHistory.value);
+  gameHistory.value = undoResult.history;
+  if (undoResult.state) {
+    gameState.value = undoResult.state;
+  }
+};
+
+const handleRedo = () => {
+  if (!gameHistory.value || !canRedo(gameHistory.value)) return;
+  const redoResult = redo(gameHistory.value);
+  gameHistory.value = redoResult.history;
+  if (redoResult.state) {
+    gameState.value = redoResult.state;
+  }
+};
+
 // Keyboard event handler for number input
 const handleKeyPress = (event: KeyboardEvent) => {
+  // Handle undo (Ctrl+Z or Cmd+Z)
+  if (
+    (event.ctrlKey || event.metaKey) &&
+    event.key === 'z' &&
+    !event.shiftKey
+  ) {
+    event.preventDefault();
+    handleUndo();
+    return;
+  }
+
+  // Handle redo (Ctrl+Shift+Z or Cmd+Shift+Z)
+  if ((event.ctrlKey || event.metaKey) && event.key === 'z' && event.shiftKey) {
+    event.preventDefault();
+    handleRedo();
+    return;
+  }
+
   if (selectedRow.value === -1 || selectedCol.value === -1) return;
 
   const cell = gameState.value.userGrid[selectedRow.value][selectedCol.value];
@@ -241,16 +376,17 @@ const handleKeyPress = (event: KeyboardEvent) => {
 
   if (key >= '1' && key <= '9' && !cell.isOriginal) {
     event.preventDefault();
-    const num = parseInt(key);
     placeNumber(
       gameState.value.userGrid,
       selectedRow.value,
       selectedCol.value,
-      num,
+      parseInt(key),
     );
+    pushMoveToHistory();
   } else if ((key === 'Backspace' || key === 'Delete') && !cell.isOriginal) {
     event.preventDefault();
     clearCell(gameState.value.userGrid, selectedRow.value, selectedCol.value);
+    pushMoveToHistory();
   } else if (key === 'ArrowUp') {
     event.preventDefault();
     selectedRow.value = Math.max(0, selectedRow.value - 1);
@@ -293,6 +429,7 @@ onMounted(() => {
   const savedState = loadGameState();
   if (savedState) {
     gameState.value = savedState;
+    gameHistory.value = createHistory(gameState.value);
     // Resume timer from saved elapsed time
     if (timerInterval !== null) {
       clearInterval(timerInterval);

@@ -6,7 +6,6 @@ describe('GameInfo.vue', () => {
   it('should formats time correctly (MM:SS)', () => {
     const wrapper = mount(GameInfo, {
       props: {
-        score: 0,
         timeElapsed: 90,
         hintsUsed: 0,
         currentDifficulty: 'intermediate',
@@ -18,7 +17,6 @@ describe('GameInfo.vue', () => {
   it('should formats time correctly (HH:MM:SS)', () => {
     const wrapper = mount(GameInfo, {
       props: {
-        score: 0,
         timeElapsed: 3661,
         hintsUsed: 0,
         currentDifficulty: 'intermediate',
@@ -30,7 +28,6 @@ describe('GameInfo.vue', () => {
   it('should displays hints used counter', () => {
     const wrapper = mount(GameInfo, {
       props: {
-        score: 0,
         timeElapsed: 0,
         hintsUsed: 3,
         currentDifficulty: 'intermediate',
@@ -42,7 +39,6 @@ describe('GameInfo.vue', () => {
   it('should updates time when prop changes', async () => {
     const wrapper = mount(GameInfo, {
       props: {
-        score: 0,
         timeElapsed: 60,
         hintsUsed: 0,
         currentDifficulty: 'intermediate',

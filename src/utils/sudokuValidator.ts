@@ -1,4 +1,3 @@
-import { isValidMove } from './sudokuSolver';
 import type { SudokuCell } from '@/types/sudoku';
 
 function getConflictingCells(
@@ -38,18 +37,6 @@ function getConflictingCells(
   }
 
   return conflicts;
-}
-
-export function isValidUserInput(
-  userGrid: SudokuCell[][],
-  row: number,
-  col: number,
-  value: number,
-): boolean {
-  if (value < 1 || value > 9) return false;
-
-  const numberGrid = userGrid.map((r) => r.map((c) => c.value));
-  return isValidMove(numberGrid, row, col, value);
 }
 
 export function placeNumber(

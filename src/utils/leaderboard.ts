@@ -43,27 +43,6 @@ export function getAllRecords(): LeaderboardEntry[] {
   }
 }
 
-export function getRecordsByDifficulty(): Record<
-  Difficulty,
-  LeaderboardEntry[]
-> {
-  const records = getAllRecords();
-  const grouped: Record<Difficulty, LeaderboardEntry[]> = {
-    beginner: [],
-    intermediate: [],
-    hard: [],
-    expert: [],
-  };
-
-  records.forEach((record) => {
-    if (grouped[record.difficulty].length < MAX_ENTRIES_PER_DIFFICULTY) {
-      grouped[record.difficulty].push(record);
-    }
-  });
-
-  return grouped;
-}
-
 export function getTopRecords(difficulty: Difficulty): LeaderboardEntry[] {
   const records = getAllRecords();
   return records

@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  isValidUserInput,
-  placeNumber,
-  clearCell,
-  isSolutionCorrect,
-} from './sudokuValidator';
+import { placeNumber, clearCell, isSolutionCorrect } from './sudokuValidator';
 import type { SudokuCell } from '@/types/sudoku';
 
 // Helper to create empty grid
@@ -24,45 +19,6 @@ const createEmptyGrid = (): SudokuCell[][] => {
 };
 
 describe('sudokuValidator', () => {
-  describe('isValidUserInput', () => {
-    it('should allow placing valid number in empty cell', () => {
-      const grid = createEmptyGrid();
-      expect(isValidUserInput(grid, 0, 0, 5)).toBe(true);
-    });
-
-    it('should reject duplicate in row', () => {
-      const grid = createEmptyGrid();
-      grid[0][1].value = 5;
-      expect(isValidUserInput(grid, 0, 0, 5)).toBe(false);
-    });
-
-    it('should reject duplicate in column', () => {
-      const grid = createEmptyGrid();
-      grid[1][0].value = 5;
-      expect(isValidUserInput(grid, 0, 0, 5)).toBe(false);
-    });
-
-    it('should reject duplicate in 3x3 box', () => {
-      const grid = createEmptyGrid();
-      grid[1][1].value = 5;
-      expect(isValidUserInput(grid, 0, 0, 5)).toBe(false);
-    });
-
-    it('should reject invalid numbers', () => {
-      const grid = createEmptyGrid();
-      expect(isValidUserInput(grid, 0, 0, 0)).toBe(false);
-      expect(isValidUserInput(grid, 0, 0, 10)).toBe(false);
-      expect(isValidUserInput(grid, 0, 0, -1)).toBe(false);
-    });
-
-    it('should allow different numbers in same row', () => {
-      const grid = createEmptyGrid();
-      grid[0][1].value = 1;
-      grid[0][2].value = 2;
-      expect(isValidUserInput(grid, 0, 0, 3)).toBe(true);
-    });
-  });
-
   describe('placeNumber', () => {
     it('should place valid number without error', () => {
       const grid = createEmptyGrid();
