@@ -71,12 +71,6 @@
 
     <!-- Game Completion Modal -->
     <GameCompletion
-      :is-visible="store.gameState.isGameOver"
-      :score-breakdown="currentScoreBreakdown"
-      :elapsed-time="store.gameState.timeElapsed"
-      :hints-used="store.gameState.hintsUsed"
-      :error-count="store.gameState.errorsCount"
-      :difficulty="store.gameState.difficulty"
       @restart="initializeGame"
       @new-puzzle="handleNewPuzzle"
       @close="closeCompletionModal"
@@ -97,7 +91,7 @@ import {
   clearCell,
   isSolutionCorrect,
 } from '@/utils/sudokuValidator';
-import { calculateFinalScore, getScoreBreakdown } from '@/utils/scoringSystem';
+import { calculateFinalScore } from '@/utils/scoringSystem';
 import { saveGameState, loadGameState, clearGameState } from '@/utils/storage';
 import { addLeaderboardEntry } from '@/utils/leaderboard';
 import {
@@ -122,14 +116,6 @@ let timerInterval: ReturnType<typeof setInterval> | null = null;
 let gameHistory = ref<HistoryState | null>(null);
 
 // Computed
-const currentScoreBreakdown = computed(() => {
-  return getScoreBreakdown(
-    store.gameState.userGrid,
-    store.gameState.solution,
-    store.gameState.hintsUsed,
-    store.gameState.errorsCount,
-  );
-});
 const canUndoMove = computed(() => {
   return gameHistory.value && canUndo(gameHistory.value);
 });

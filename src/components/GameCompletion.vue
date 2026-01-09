@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <div
-      v-if="isVisible"
+      v-if="store.gameState.isGameOver"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
       @click="handleBackdropClick"
     >
@@ -41,7 +41,7 @@
               class="flex justify-between items-center"
             >
               <span class="text-gray-700"
-                >Hint Penalty ({{ hintsUsed }} hints):</span
+                >Hint Penalty ({{ store.gameState.hintsUsed }} hints):</span
               >
               <span class="font-semibold text-red-600">
                 -{{ scoreBreakdown.hintPenalty }}
@@ -53,7 +53,7 @@
               class="flex justify-between items-center"
             >
               <span class="text-gray-700"
-                >Error Penalty ({{ errorCount }} errors):</span
+                >Error Penalty ({{ store.gameState.errorsCount }} errors):</span
               >
               <span class="font-semibold text-red-600">
                 -{{ scoreBreakdown.errorPenalty }}
@@ -73,7 +73,7 @@
             <div>
               <p class="text-xs text-gray-600">Time</p>
               <p class="text-lg font-semibold text-gray-900">
-                {{ formatTime(elapsedTime) }}
+                {{ formatTime(store.gameState.timeElapsed) }}
               </p>
             </div>
             <div>
@@ -85,7 +85,7 @@
             <div>
               <p class="text-xs text-gray-600">Errors</p>
               <p class="text-lg font-semibold text-gray-900">
-                {{ errorCount }}
+                {{ store.gameState.errorsCount }}
               </p>
             </div>
           </div>
@@ -113,29 +113,27 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useGameStore } from '@/stores/gameStore';
+import { getScoreBreakdown } from '@/utils/scoringSystem';
 import type { Difficulty } from '@/types/sudoku';
 
-interface Props {
-  isVisible: boolean;
-  scoreBreakdown: {
-    baseScore: number;
-    hintPenalty: number;
-    errorPenalty: number;
-    finalScore: number;
-  };
-  elapsedTime: number;
-  hintsUsed: number;
-  errorCount: number;
-  difficulty: Difficulty;
-}
-
-const props = defineProps<Props>();
-
-const emit = defineEmits<{
+interface Emits {
   restart: [];
   'new-puzzle': [];
   close: [];
-}>();
+}
+
+const store = useGameStore();
+const emit = defineEmits<Emits>();
+
+const scoreBreakdown = computed(() => {
+  return getScoreBreakdown(
+    store.gameState.userGrid,
+    store.gameState.solution,
+    store.gameState.hintsUsed,
+    store.gameState.errorsCount,
+  );
+});
 
 const difficultyLabel = computed(() => {
   const labels: Record<Difficulty, string> = {
@@ -144,7 +142,7 @@ const difficultyLabel = computed(() => {
     hard: 'Hard',
     expert: 'Expert',
   };
-  return labels[props.difficulty];
+  return labels[store.gameState.difficulty];
 });
 
 const formatTime = (seconds: number): string => {
