@@ -71,32 +71,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import SudokuGrid from './SudokuGrid.vue';
 import GameInfo from './GameInfo.vue';
 import AvailableDigits from './AvailableDigits.vue';
 import GameCompletion from './GameCompletion.vue';
 import LeaderboardTable from './LeaderboardTable.vue';
 import { generatePuzzle } from '@/utils/puzzleGenerator';
-import {
-  placeNumber,
-  clearCell,
-  isSolutionCorrect,
-} from '@/utils/sudokuValidator';
-import { calculateFinalScore } from '@/utils/scoringSystem';
-import { saveGameState, loadGameState, clearGameState } from '@/utils/storage';
-import { addLeaderboardEntry } from '@/utils/leaderboard';
-import {
-  createHistory,
-  pushToHistory,
-  undo,
-  redo,
-  canUndo,
-  canRedo,
-  type HistoryState,
-} from '@/utils/historyManager';
+import { placeNumber } from '@/utils/sudokuValidator';
+import { saveGameState, loadGameState } from '@/utils/storage';
 import { useGameStore } from '@/stores/gameStore';
 import { useGameTimer } from '@/composables/useGameTimer';
+import { useGameHistory } from '@/composables/useGameHistory';
+import { useKeyboardControls } from '@/composables/useKeyboardControls';
 import type { Difficulty } from '@/types/sudoku';
 
 // Store
@@ -104,20 +91,22 @@ const store = useGameStore();
 
 // Composables
 const { startTimer, stopTimer, resetTimer, resumeTimer } = useGameTimer();
+const {
+  canUndoMove,
+  canRedoMove,
+  initializeHistory,
+  pushMoveToHistory,
+  handleUndo,
+  handleRedo,
+} = useGameHistory();
+
+const { handleKeyPress } = useKeyboardControls({
+  pushMoveToHistory,
+  stopTimer,
+});
 
 // Local state
 const leaderboardRefreshKey = ref<number>(0);
-
-let gameHistory = ref<HistoryState | null>(null);
-
-// Computed
-const canUndoMove = computed(() => {
-  return gameHistory.value && canUndo(gameHistory.value);
-});
-
-const canRedoMove = computed(() => {
-  return gameHistory.value && canRedo(gameHistory.value);
-});
 
 // Watch gameState for changes and save to localStorage
 watch(
@@ -170,7 +159,7 @@ const initializeGame = () => {
   store.gameState.errorsCount = 0;
 
   // Initialize history for new game
-  gameHistory.value = createHistory(store.gameState);
+  initializeHistory(store.gameState);
 
   // Reset and start timer
   resetTimer();
@@ -257,91 +246,12 @@ const closeCompletionModal = () => {
   store.gameState.isGameOver = false;
 };
 
-const handleUndo = () => {
-  if (!gameHistory.value || !canUndo(gameHistory.value)) return;
-  const undoResult = undo(gameHistory.value);
-  gameHistory.value = undoResult.history;
-  if (undoResult.state) {
-    store.gameState = undoResult.state;
-  }
-};
-
-const handleRedo = () => {
-  if (!gameHistory.value || !canRedo(gameHistory.value)) return;
-  const redoResult = redo(gameHistory.value);
-  gameHistory.value = redoResult.history;
-  if (redoResult.state) {
-    store.gameState = redoResult.state;
-  }
-};
-
-const handleKeyPress = (event: KeyboardEvent) => {
-  if (store.selectedRow === -1 || store.selectedCol === -1) return;
-
-  const cell = store.gameState.userGrid[store.selectedRow][store.selectedCol];
-
-  const key = event.key;
-
-  if (key >= '1' && key <= '9' && !cell.isOriginal) {
-    event.preventDefault();
-    placeNumber(
-      store.gameState.userGrid,
-      store.selectedRow,
-      store.selectedCol,
-      parseInt(key),
-    );
-    pushMoveToHistory();
-  } else if ((key === 'Backspace' || key === 'Delete') && !cell.isOriginal) {
-    event.preventDefault();
-    clearCell(store.gameState.userGrid, store.selectedRow, store.selectedCol);
-    pushMoveToHistory();
-  } else if (key === 'ArrowUp') {
-    event.preventDefault();
-    store.selectedRow = Math.max(0, store.selectedRow - 1);
-  } else if (key === 'ArrowDown') {
-    event.preventDefault();
-    store.selectedRow = Math.min(8, store.selectedRow + 1);
-  } else if (key === 'ArrowLeft') {
-    event.preventDefault();
-    store.selectedCol = Math.max(0, store.selectedCol - 1);
-  } else if (key === 'ArrowRight') {
-    event.preventDefault();
-    store.selectedCol = Math.min(8, store.selectedCol + 1);
-  }
-  if (isSolutionCorrect(store.gameState.userGrid, store.gameState.solution)) {
-    store.gameState.isGameOver = true;
-    // Calculate final score when game is completed
-    store.gameState.score = calculateFinalScore(
-      store.gameState.userGrid,
-      store.gameState.solution,
-      store.gameState.hintsUsed,
-      store.gameState.errorsCount,
-    );
-    // Save to leaderboard
-    addLeaderboardEntry(
-      store.gameState.score,
-      store.gameState.difficulty,
-      store.gameState.timeElapsed,
-    );
-    // Stop timer
-    stopTimer();
-
-    clearGameState();
-  }
-};
-
-const pushMoveToHistory = () => {
-  if (gameHistory.value) {
-    gameHistory.value = pushToHistory(gameHistory.value, store.gameState);
-  }
-};
-
 onMounted(() => {
   // Try to load saved game state
   const savedState = loadGameState();
   if (savedState) {
     store.gameState = savedState;
-    gameHistory.value = createHistory(store.gameState);
+    initializeHistory(store.gameState);
     // Resume timer from saved elapsed time
     resumeTimer();
   } else {
